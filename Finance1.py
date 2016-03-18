@@ -14,6 +14,10 @@ def get_mean_volume(symbol):
 	df = pd.read_csv('data/{}.csv'.format(symbol))
 	return df['Volume'].mean()
 
+def plot_multiple(data, *args):
+	data[list(args)].plot()
+	plt.show()
+
 def test_run():
 	df = pd.read_csv('data/AAPL.csv')
 	print df.head()
@@ -25,8 +29,10 @@ def test_run():
 		print symbol, get_mean_volume(symbol)
 		
 	print df['Adj Close']
-	df['Adj Close'].plot()
-	plt.show()
+	plot_multiple(df, "Close","Adj Close")
+# 	df['Adj Close'].plot()
+# 	plt.show()
+# 	
 
 if __name__ == "__main__":
 	test_run()

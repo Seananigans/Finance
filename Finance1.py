@@ -19,7 +19,19 @@ def plot_multiple(data, *args):
 
 def start_end(start, end):
 	return pd.date_range(start, end)
-	
+
+def read_and_join(df_date_range, *args):
+	for symbol in list(args):
+		df_symbol = pd.read_csv("data/{}.csv".format(symbol), 
+								index_col="Date", 
+								parse_dates=True, 
+								usecols=['Date','Adj Close'], 
+								na_values=['nan'])
+		df_symbol = df_symbol.rename(columns={"Adj Close":symbol})
+		print df_date_range.head()
+		df_date_range.join(df_symbol, how="inner")
+	return df_date_range
+
 def test_run():
 	df = pd.read_csv('data/AAPL.csv')
 	print df.head()
@@ -30,18 +42,17 @@ def test_run():
 		print "Mean Volume"
 		print symbol, get_mean_volume(symbol)
 		
-# 	print df['Adj Close']
 # 	plot_multiple(df, "Close","Adj Close")
 	start_date = '2010-01-22'
 	end_date = '2010-01-26'
 	dates =  start_end(start_date, end_date)
 	df1 = pd.DataFrame(index=dates)
-	dfSPY = pd.read_csv("data/SPY.csv", index_col="Date",
-						parse_dates=True, usecols=['Date','Adj Close'],
-						na_values=['nan'] )
+# 	dfSPY = pd.read_csv("data/SPY.csv", index_col="Date",
+# 						parse_dates=True, usecols=['Date','Adj Close'],
+# 						na_values=['nan'] )
 	df1 = df1.dropna()
-	df1 = df1.join(dfSPY)
-	print df1
-
+# 	df1 = df1.join(dfSPY, how="inner")
+	print read_and_join(df1, "SPY")
+	
 if __name__ == "__main__":
 	test_run()

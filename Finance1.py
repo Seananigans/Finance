@@ -36,23 +36,23 @@ def get_mean_volume(symbol):
 	df = pd.read_csv('data/{}.csv'.format(symbol))
 	return df['Volume'].mean()
 
-def plot_multiple(data, *args):
-	data[list(args)].plot()
+def plot_multiple(data, title="Stock Prices", xlabel="Dates", ylabel="Normalized Prices", *args):
+	data[list(args)].plot(title=title)
+	ax.set_xlabel(xlabel)
+	ax.set_ylabel(ylabel)
 	plt.show()
 
+def plot_normalized(data, title="Stock Prices", xlabel="Dates", ylabel="Normalized Prices"):
+	ax = (data/data.iloc[-1]).plot(title=title)
+	ax.set_xlabel(xlabel)
+	ax.set_ylabel(ylabel)
+	plt.show()
+
+def normalize(data):
+	return data/data.iloc[-1]
+	
 def start_end(start, end):
 	return pd.date_range(start, end)
-
-def read_and_join(df1, *args):
-	for symbol in list(args):
-		df_symbol = pd.read_csv("data/{}.csv".format(symbol), 
-								index_col="Date", 
-								parse_dates=True, 
-								usecols=['Date','Adj Close'], 
-								na_values=['nan'])
-		df_symbol = df_symbol.rename(columns={"Adj Close":symbol})
-		df1 = df1.join(df_symbol, how="inner")
-	return df1
 		
 def test_run():
 	df = pd.read_csv('data/AAPL.csv')
@@ -63,18 +63,14 @@ def test_run():
 		print symbol, get_max_close(symbol)
 		print "Mean Volume"
 		print symbol, get_mean_volume(symbol)
-		
-# 	plot_multiple(df, "Close","Adj Close")
-	start_date = '2010-01-22'
-	end_date = '2010-01-26'
+	
+	start_date = '2010-01-01'
+	end_date = '2010-12-31'
 	dates =  start_end(start_date, end_date)
-	df1 = pd.DataFrame(index=dates)
-# 	dfSPY = pd.read_csv("data/SPY.csv", index_col="Date",
-# 						parse_dates=True, usecols=['Date','Adj Close'],
-# 						na_values=['nan'] )
-	df1 = df1.dropna()
-# 	df1 = df1.join(dfSPY, how="inner")
-	print read_and_join(df1, "SPY", "HCP", "AAPL","IBM")
+	symbols= [ "SPY", "HCP", "AAPL","IBM"]
+	df1 = get_data(symbols, dates)
+# 	plot_multiple(df1, "SPY", "HCP", "AAPL","IBM")
+	plot_normalized(df1)
 	
 if __name__ == "__main__":
 	test_run()

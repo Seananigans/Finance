@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
 from util import get_data, plot_data
+import scipy.optimize as spo
 
 # This is the function that will be tested by the autograder
 # The student must update this code to properly implement the functionality
@@ -20,6 +21,8 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     # find the allocations for the optimal portfolio
     # note that the values here ARE NOT meant to be correct for a test case
     allocs = np.asarray([0.2, 0.2, 0.3, 0.3, 0.0]) # add code here to find the allocations
+    
+    spo.minimize(get_portfolio_value, allocs, args=(prices, 1.0))
     cr, adr, sddr, sr = [0.25, 0.001, 0.0005, 2.1] # add code here to compute stats
 
     # Get daily portfolio value
@@ -33,6 +36,36 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
 
     return allocs, cr, adr, sddr, sr
 
+def get_portfolio_value(allocs, prices, start_val=1.0):
+    """Given a starting value and prices of
+stocks in portfolio with allocations
+return the portfolio value over time."""
+    normed = prices/prices.iloc[0]
+    alloced = np.multiply(allocs, normed)
+    pos_vals = alloced * start_val
+    port_val = pos_vals.sum(axis=1)
+    return port_val
+
+def get_portfolio_stats(port_val, daily_rf=0.0, samples_per_year=252):
+    """Given portfolio values return:
+Cummulative return (cr)
+Average Daily Return (adr)
+Standard Deviation of Daily Return (sddr)
+Sharpe Ratio (sr)."""
+    cr = port_val.iloc[-1]/port_val.iloc[0] - 1.0
+    daily_returns = (port_val / port_val.shift(1)) - 1
+    daily_returns = daily_returns.iloc[1:]
+    adr = daily_returns.mean()
+    sddr = daily_returns.std()
+    sr = (daily_returns-daily_rf).mean()/sddr *np.sqrt(samples_per_year)
+    return sr #cr, adr, sddr, sr
+
+def plot_normalized_data(df, title="Daily portfolio value and SPY", 
+						 xlabel="Date", ylabel="Normalized price"):
+    """Plot stock prices with a custom title and meaningful axis labels."""
+    df_temp = pd.concat([df, prices_SPY/sv], keys=['Portfolio', 'SPY'], axis=1)
+    plot_data(df_temp, title, xlabel, ylabel)
+    
 def test_code():
     # This function WILL NOT be called by the auto grader
     # Do not assume that any variables defined here are available to your function/code

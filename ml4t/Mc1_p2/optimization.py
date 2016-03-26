@@ -43,7 +43,7 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     if gen_plot:
         # add code to plot here
         df_temp = pd.concat([port_val, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)
-        pass
+        plot_normalized_data(df_temp)
 
     return allocs, cr, adr, sddr, sr
 
@@ -80,8 +80,7 @@ def get_sharpe_ratio(allocs, prices):
 def plot_normalized_data(df, title="Daily portfolio value and SPY", 
 						 xlabel="Date", ylabel="Normalized price"):
     """Plot stock prices with a custom title and meaningful axis labels."""
-    df_temp = pd.concat([df, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)
-    plot_data(df_temp, title, xlabel, ylabel)
+    plot_data(df/df.iloc[0], title, xlabel, ylabel)
     
 def test_code():
     # This function WILL NOT be called by the auto grader
@@ -97,9 +96,24 @@ def test_code():
 #     symbols = ['GOOG', 'AAPL', 'GLD', 'XOM', 'IBM']
     
     # Example 1
-    start_date = dt.datetime(2010,1,1)
-    end_date = dt.datetime(2010,12,31)
-    symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
+#     start_date = dt.datetime(2010,1,1)
+#     end_date = dt.datetime(2010,12,31)
+#     symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
+    
+    # Example 2
+    start_date = dt.datetime(2004,1,1)
+    end_date = dt.datetime(2006,1,1)
+    symbols = ['AXP', 'HPQ', 'IBM', 'HNZ']
+    
+    # Example 3
+#     start_date = dt.datetime(2004,12,1)
+#     end_date = dt.datetime(2006,5,31)
+#     symbols = ['YHOO', 'XOM', 'GLD', 'HNZ']
+
+    # Example 4
+#     start_date = dt.datetime(2005,12,1)
+#     end_date = dt.datetime(2006,5,31)
+#     symbols = ['YHOO', 'HPQ', 'GLD', 'HNZ']
 
     # Assess the portfolio
     allocations, cr, adr, sddr, sr = optimize_portfolio(sd = start_date, ed = end_date,\

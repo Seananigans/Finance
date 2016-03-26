@@ -1,0 +1,8 @@
+Start Date: 2004-01-01 00:00:00
+End Date: 2006-01-01 00:00:00
+Symbols: ['AXP', 'HPQ', 'IBM', 'HNZ']
+Allocations: [  7.75112973e-01   2.24887027e-01   0.00000000e+00   6.50521303e-17]
+Sharpe Ratio: 0.842697383626
+Volatility (stdev of daily returns): 0.00932363943778
+Average Daily Return: 0.000494944890652
+Cumulative Return: 0.255021426663

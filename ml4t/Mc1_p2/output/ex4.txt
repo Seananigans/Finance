@@ -1,0 +1,8 @@
+Start Date: 2005-12-01 00:00:00
+End Date: 2006-05-31 00:00:00
+Symbols: ['YHOO', 'HPQ', 'GLD', 'HNZ']
+Allocations: [ 0.          0.1012274   0.24692686  0.65184574]
+Sharpe Ratio: 3.23342658727
+Volatility (stdev of daily returns): 0.00842416913507
+Average Daily Return: 0.00171589145858
+Cumulative Return: 0.229471609805

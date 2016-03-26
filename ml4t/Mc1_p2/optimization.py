@@ -18,16 +18,23 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     prices = prices_all[syms]  # only portfolio symbols
     prices_SPY = prices_all['SPY']  # only SPY, for comparison later
 
-    # find the allocations for the optimal portfolio
-    # note that the values here ARE NOT meant to be correct for a test case
-    allocs = np.asarray([0.2, 0.2, 0.3, 0.3, 0.0]) # add code here to find the allocations
+	# find the allocations for the optimal portfolio
+    #1 provide an initial guess for x
+    allocs = np.ones(len(syms))/len(syms)
+    #2 Provide constraints to the optimizer
+    constraints = ({ 'type': 'eq', 'fun': lambda inputs: 50.0 - np.sum(inputs) })
+    #3 call the optimizer
+    res = spo.minimize(get_sharpe_ratio, allocs, args=prices, constraints=constraints)
+    allocs = res.x
     
-    spo.minimize(get_portfolio_value, allocs, args=(prices, 1.0))
-    cr, adr, sddr, sr = [0.25, 0.001, 0.0005, 2.1] # add code here to compute stats
-
     # Get daily portfolio value
-    port_val = prices_SPY # add code here to compute daily portfolio values
-
+    port_val = get_portfolio_value(prices, allocs, 1.0)
+    
+    # Get portfolio statistics
+    cr, adr, sddr, sr = get_portfolio_stats(port_val, 
+    										daily_rf=0.0, 
+    										samples_per_year=252)
+    
     # Compare daily portfolio value with SPY using a normalized plot
     if gen_plot:
         # add code to plot here
@@ -36,7 +43,7 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
 
     return allocs, cr, adr, sddr, sr
 
-def get_portfolio_value(allocs, prices, start_val=1.0):
+def get_portfolio_value(prices, allocs, start_val):
     """Given a starting value and prices of
 stocks in portfolio with allocations
 return the portfolio value over time."""
@@ -46,7 +53,7 @@ return the portfolio value over time."""
     port_val = pos_vals.sum(axis=1)
     return port_val
 
-def get_portfolio_stats(port_val, daily_rf=0.0, samples_per_year=252):
+def get_portfolio_stats(port_val, daily_rf, samples_per_year):
     """Given portfolio values return:
 Cummulative return (cr)
 Average Daily Return (adr)
@@ -58,12 +65,18 @@ Sharpe Ratio (sr)."""
     adr = daily_returns.mean()
     sddr = daily_returns.std()
     sr = (daily_returns-daily_rf).mean()/sddr *np.sqrt(samples_per_year)
-    return sr #cr, adr, sddr, sr
+    return cr, adr, sddr, sr
+
+def get_sharpe_ratio(allocs, prices):
+	"""Calculate sharpe ratio for minimizer."""
+	port_val = get_portfolio_value(prices, allocs, start_val=1.0)
+	sharpe_ratio = get_portfolio_stats(port_val, daily_rf=0.0, samples_per_year=252)[3]
+	return -sharpe_ratio
 
 def plot_normalized_data(df, title="Daily portfolio value and SPY", 
 						 xlabel="Date", ylabel="Normalized price"):
     """Plot stock prices with a custom title and meaningful axis labels."""
-    df_temp = pd.concat([df, prices_SPY/sv], keys=['Portfolio', 'SPY'], axis=1)
+    df_temp = pd.concat([df, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)
     plot_data(df_temp, title, xlabel, ylabel)
     
 def test_code():
@@ -75,9 +88,14 @@ def test_code():
     # Note that ALL of these values will be set to different values by
     # the autograder!
 
-    start_date = dt.datetime(2009,1,1)
-    end_date = dt.datetime(2010,1,1)
-    symbols = ['GOOG', 'AAPL', 'GLD', 'XOM', 'IBM']
+#     start_date = dt.datetime(2009,1,1)
+#     end_date = dt.datetime(2010,1,1)
+#     symbols = ['GOOG', 'AAPL', 'GLD', 'XOM', 'IBM']
+    
+    # Example 1
+    start_date = dt.datetime(2010,1,1)
+    end_date = dt.datetime(2010,12,31)
+    symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
 
     # Assess the portfolio
     allocations, cr, adr, sddr, sr = optimize_portfolio(sd = start_date, ed = end_date,\

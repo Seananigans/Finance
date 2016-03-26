@@ -22,9 +22,13 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     #1 provide an initial guess for x
     allocs = np.ones(len(syms))/len(syms)
     #2 Provide constraints to the optimizer
-    constraints = ({ 'type': 'eq', 'fun': lambda inputs: 50.0 - np.sum(inputs) })
+    bounds = [(0,1) for i in syms]
+    constraints = ({ 'type': 'eq', 'fun': lambda inputs: 1.0 - np.sum(inputs) })
     #3 call the optimizer
-    res = spo.minimize(get_sharpe_ratio, allocs, args=prices, constraints=constraints)
+    res = spo.minimize(get_sharpe_ratio, allocs, 
+    					args=prices, 
+    					bounds = bounds,
+    					constraints=constraints)
     allocs = res.x
     
     # Get daily portfolio value

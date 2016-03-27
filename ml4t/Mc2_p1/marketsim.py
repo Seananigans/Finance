@@ -7,17 +7,35 @@ import os
 from util import get_data, plot_data
 
 def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
-    # this is the function the autograder will call to test your code
-    # TODO: Your code here
-
-    # In the template, instead of computing the value of the portfolio, we just
-    # read in the value of IBM over 6 months
-    start_date = dt.datetime(2008,1,1)
-    end_date = dt.datetime(2008,6,1)
-    portvals = get_data(['IBM'], pd.date_range(start_date, end_date))
-    portvals = portvals[['IBM']]  # remove SPY
-
-    return portvals
+	# this is the function the autograder will call to test your code
+	# TODO: Your code here
+	orders = pd.read_csv(orders_file, index_col="Date", 
+						parse_dates=True, na_values=['nan'])
+	print orders
+	# In the template, instead of computing the value of the portfolio, we just
+	# read in the value of IBM over 6 months
+# 	start_date = dt.datetime(2008,1,1)
+# 	end_date = dt.datetime(2008,6,1)
+	start_date = pd.to_datetime(orders.iloc[0].name)
+	end_date = pd.to_datetime(orders.iloc[-1].name)
+	symbols = list(orders.Symbol.unique())
+# 	portvals = get_data(['IBM'], pd.date_range(start_date, end_date))
+	portvals = get_data(symbols, pd.date_range(start_date, end_date))
+# 	portvals = portvals[['IBM']]  # remove SPY
+	for i in range(orders.shape[0]):
+		sym = orders.iloc[i].Symbol
+		date = pd.to_datetime(orders.iloc[i].name)
+		price = portvals.ix[date, sym]
+		stock_order = orders.iloc[i].Order
+		n_shares = orders.iloc[i].Shares
+		if stock_order = "BUY"
+			n_shares*price
+		else:
+			n_shares*price
+		
+		
+	
+	return portvals
 
 def test_code():
     # this is a helper function you can use to test your code
@@ -36,8 +54,8 @@ def test_code():
     
     # Get portfolio stats
     # Here we just fake the data. you should use your code from previous assignments.
-    start_date = dt.datetime(2008,1,1)
-    end_date = dt.datetime(2008,6,1)
+    start_date = pd.to_datetime(portvals.idxmin())
+    end_date = pd.to_datetime(portvals.idxmax())
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = [0.2,0.01,0.02,1.5]
     cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = [0.2,0.01,0.02,1.5]
 

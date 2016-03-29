@@ -17,8 +17,8 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
     # 2 Scan trades for symbols
     symbols = list(trades.Symbol.unique())
     # 3 Scan trades for dates
-    start_date = pd.to_datetime(trades.iloc[0].name)
-    end_date = pd.to_datetime(trades.iloc[-1].name)
+    start_date = pd.to_datetime(trades.index.min())
+    end_date = pd.to_datetime(trades.index.max())
     
     # 4 Read in data
     portvals = get_data(symbols, pd.date_range(start_date, end_date))
@@ -27,17 +27,22 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
     # 5 Scan trades to update cash
     on_hand = portvals.copy()
     on_hand[:] = 0.0
+    # 6 Scan trades to create ownership array
+    portfolio = portvals.copy()
+    portfolio[:] = 0.
+    # 5 + 6
     for i in range(trades.shape[0]):
         sym = trades.iloc[i].Symbol
         date = pd.to_datetime(trades.iloc[i].name)
-        print date
         price = portvals.ix[date, sym]
         stock_order = trades.iloc[i].Order
         n_shares = trades.iloc[i].Shares
         if stock_order == "BUY":
             on_hand.ix[date, sym] = -n_shares*price
+            portfolio.ix[date, sym] = n_shares
         else:
             on_hand.ix[date, sym] = n_shares*price
+            portfolio.ix[date, sym] = -n_shares
     on_hand = np.sum(on_hand, axis=1)
     
     for i in range(on_hand.shape[0]):
@@ -45,30 +50,14 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
             on_hand.iloc[i] += start_val
         else:
             on_hand.iloc[i] += on_hand[i-1]
+            portfolio.iloc[i] += portfolio.iloc[i-1]
     
-    # 6 Scan trades to create ownership array
-    portfolio = portvals.copy()
-    portfolio[:] = 0.
-    for i in range(trades.shape[0]):
-        sym = trades.iloc[i].Symbol
-        date = pd.to_datetime(trades.iloc[i].name)
-        price = portvals.ix[date, sym]
-        stock_order = trades.iloc[i].Order
-        n_shares = trades.iloc[i].Shares
-        if stock_order == "BUY":
-            portfolio.ix[date, sym] = n_shares
-        else:
-            portfolio.ix[date, sym] = -n_shares
-    # portfolio = np.sum(portfolio, axis=1)
-#   temp = portfolio.copy()
-    for i in range(1,portfolio.shape[0]):
-        portfolio.iloc[i] += portfolio.iloc[i-1]
     portfolio = portfolio*portvals
     portfolio = np.sum(portfolio, axis=1)
     
     # 7 Scan cash and value to create total fund value
     portvals = portfolio + on_hand
-    
+    print portvals
     return portvals
 
 def test_code():

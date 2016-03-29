@@ -38,11 +38,13 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
         stock_order = trades.iloc[i].Order
         n_shares = trades.iloc[i].Shares
         if stock_order == "BUY":
-            on_hand.ix[date, sym] = -n_shares*price
-            portfolio.ix[date, sym] = n_shares
+            on_hand.ix[date, sym] -= n_shares*price
+            portfolio.ix[date, sym] += n_shares
         else:
-            on_hand.ix[date, sym] = n_shares*price
-            portfolio.ix[date, sym] = -n_shares
+            on_hand.ix[date, sym] += n_shares*price
+            portfolio.ix[date, sym] -= n_shares
+    print on_hand
+    print portfolio
     on_hand = np.sum(on_hand, axis=1)
     
     for i in range(on_hand.shape[0]):
@@ -51,8 +53,10 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
         else:
             on_hand.iloc[i] += on_hand[i-1]
             portfolio.iloc[i] += portfolio.iloc[i-1]
-    
+    print portfolio
+    print portvals
     portfolio = portfolio*portvals
+    print portfolio
     portfolio = np.sum(portfolio, axis=1)
     
     # 7 Scan cash and value to create total fund value
@@ -65,8 +69,9 @@ def test_code():
     # note that during autograding his function will not be called.
     # Define input parameters
 
-#     of = "./orders/orders2.csv"
-    of = "./orders/orders-test.csv"
+    of = "./orders/orders2.csv"
+#     of = "./orders/orders-test.csv"
+#     of = "./orders/orders-short.csv"
     sv = 1000000
 
     # Process orders

@@ -12,7 +12,7 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	# 1 Read CSV into trades array
 	trades = pd.read_csv(orders_file, index_col="Date", 
 						parse_dates=True, na_values=['nan'])
-	print trades
+# 	print trades
 
 	# 2 Scan trades for symbols
 	symbols = list(trades.Symbol.unique())
@@ -31,12 +31,25 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	portfolio = portvals.copy()
 	portfolio[:] = 0.
 	# 5 + 6
+	shorts = longs = 0.0
 	for i in range(trades.shape[0]):
 		sym = trades.iloc[i].Symbol
 		date = pd.to_datetime(trades.iloc[i].name)
 		price = portvals.ix[date, sym]
 		stock_order = trades.iloc[i].Order
 		n_shares = trades.iloc[i].Shares
+		
+		if n_shares<0:
+			shorts += n_shares*price
+		else:
+			longs += n_shares*price
+		cash = np.sum(on_hand.ix[date,:])
+		print "Cash", cash
+		leverage = (longs + abs(shorts)) / (longs - abs(shorts) + cash)
+		if leverage >= 2.0:
+			shorts-=n_shares*price
+			continue
+		
 		if stock_order == "BUY":
 			on_hand.ix[date, sym] -= n_shares*price
 			portfolio.ix[date, sym] += n_shares

@@ -43,8 +43,7 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 		else:
 			on_hand.ix[date, sym] += n_shares*price
 			portfolio.ix[date, sym] -= n_shares
-# 	print on_hand
-# 	print portfolio
+
 	on_hand = np.sum(on_hand, axis=1)
 	
 	for i in range(on_hand.shape[0]):
@@ -53,15 +52,11 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 		else:
 			on_hand.iloc[i] += on_hand[i-1]
 			portfolio.iloc[i] += portfolio.iloc[i-1]
-# 	print portfolio
-# 	print portvals
 	portfolio = portfolio*portvals
-# 	print portfolio
 	portfolio = np.sum(portfolio, axis=1)
 	
 	# 7 Scan cash and value to create total fund value
 	portvals = portfolio + on_hand
-# 	print portvals
 	return portvals
 
 def get_portfolio_value(prices, allocs, start_val):
@@ -99,9 +94,11 @@ def test_code():
 	# note that during autograding his function will not be called.
 	# Define input parameters
 
-#	  of = "./orders/orders2.csv"
+	of = "./orders/orders2.csv"
+	of = "./orders/orders3.csv"
 #	  of = "./orders/orders-test.csv"
-	of = "./orders/orders-short.csv"
+# 	of = "./orders/orders-short.csv"
+# 	of = "./orders/orders.csv"
 	sv = 1000000
 
 	# Process orders
@@ -113,13 +110,14 @@ def test_code():
 	
 	# Get portfolio stats
 	# Here we just fake the data. you should use your code from previous assignments.
-	start_date = pd.to_datetime(portvals.idxmin())
-	end_date = pd.to_datetime(portvals.idxmax())
+	portvals = portvals.sort_index()
+	start_date = pd.to_datetime(portvals.index.min())
+	end_date = pd.to_datetime(portvals.index.max())
 	dates = pd.date_range(start_date, end_date)
-	print dates, start_date, end_date
+	
 	cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = get_portfolio_stats(portvals,0.0,252)
-	dfSPY = get_data(["SPY"], dates, addSPY=False)
-	print dfSPY
+	dfSPY = get_data(["$SPX"], dates)
+	dfSPY = dfSPY[["$SPX"]]
 	cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = get_portfolio_stats(
 	dfSPY, 0.0,252)
 

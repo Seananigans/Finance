@@ -13,15 +13,18 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	trades = pd.read_csv(orders_file, index_col="Date", 
 						parse_dates=True, na_values=['nan'])
 # 	print trades
-
+	
 	# 2 Scan trades for symbols
 	symbols = list(trades.Symbol.unique())
 	# 3 Scan trades for dates
 	start_date = pd.to_datetime(trades.index.min())
 	end_date = pd.to_datetime(trades.index.max())
 	
+	dates = pd.date_range(start_date, end_date)
+
+	
 	# 4 Read in data
-	portvals = get_data(symbols, pd.date_range(start_date, end_date))
+	portvals = get_data(symbols, dates)
 	portvals = portvals[symbols]  # remove SPY
 	
 	# 5 Scan trades to update cash
@@ -30,8 +33,33 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	# 6 Scan trades to create ownership array
 	portfolio = portvals.copy()
 	portfolio[:] = 0.
+	own = portvals.copy()
+	own[:] = 0.0
+# 	own = trades.join(own, how="right")
+# 	signal = (own["Order"]=="SELL")*-1.0 + (own["Order"]=="BUY")
+# 	for symbol in own.columns.values:
+# 		if symbol not in ["Symbol", "Order", "Shares"]:
+# 			own[symbol] = own["Shares"]*(own["Symbol"]==symbol) * signal
+# 	own = own.drop(["Symbol", "Order", "Shares"],1)
+# 	own[own+1.0==1.0]=np.nan
+# 	current_val=start_val
+# 	cash = pd.DataFrame(index=dates)
+# 	cash["Cash"]= 0.0
+# 	cash = cash.join(own, how="right")
+# 	cash = cash["Cash"]
+# 	for i in range(own.shape[0]):
+# 		cash.iloc[i] = current_val - np.sum(own*portvals, axis=1).fillna(0).iloc[i]
+# 		current_val = cash.iloc[i]
+# 	print cash
+
 	# 5 + 6
 	shorts = longs = 0.0
+	port = trades.join(portvals, how="right")#.fillna(method="ffill")
+	for symbol in port.columns.values:
+		if symbol not in ["Symbol", "Order", "Shares"]:
+			port[symbol] = port[symbol]*(port["Symbol"]==symbol)
+
+	
 	for i in range(trades.shape[0]):
 		sym = trades.iloc[i].Symbol
 		date = pd.to_datetime(trades.iloc[i].name)
@@ -39,12 +67,15 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 		stock_order = trades.iloc[i].Order
 		n_shares = trades.iloc[i].Shares
 		
+		own.ix[date, sym] = n_shares*(stock_order=="BUY")
+		
 		if n_shares<0:
 			shorts += n_shares*price
 		else:
 			longs += n_shares*price
+		
 		cash = np.sum(on_hand.ix[date,:])
-		print "Cash", cash
+# 		print "Cash", cash
 		leverage = (longs + abs(shorts)) / (longs - abs(shorts) + cash)
 		if leverage >= 2.0:
 			shorts-=n_shares*price
@@ -57,19 +88,20 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 			on_hand.ix[date, sym] += n_shares*price
 			portfolio.ix[date, sym] -= n_shares
 
-	on_hand = np.sum(on_hand, axis=1)
+	cash = np.sum(on_hand, axis=1)
+# 	print cash
 	
 	for i in range(on_hand.shape[0]):
 		if i==0:
-			on_hand.iloc[i] += start_val
+			cash.iloc[i] += start_val
 		else:
-			on_hand.iloc[i] += on_hand[i-1]
+			cash.iloc[i] += cash.iloc[i-1]
 			portfolio.iloc[i] += portfolio.iloc[i-1]
 	portfolio = portfolio*portvals
 	portfolio = np.sum(portfolio, axis=1)
 	
 	# 7 Scan cash and value to create total fund value
-	portvals = portfolio + on_hand
+	portvals = portfolio + cash
 	return portvals
 
 def get_portfolio_value(prices, allocs, start_val):

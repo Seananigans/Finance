@@ -12,7 +12,7 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	# 1 Read CSV into trades array
 	trades = pd.read_csv(orders_file, index_col="Date", 
 						parse_dates=True, na_values=['nan'])
-# 	print trades
+	print trades
 	
 	# 2 Scan trades for symbols
 	symbols = list(trades.Symbol.unique())
@@ -34,7 +34,7 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	portfolio = portvals.copy()
 	portfolio[:] = 0.
 	own = portvals.copy()
-	own[:] = 0.0
+	own[:] = 0#np.nan
 # 	own = trades.join(own, how="right")
 # 	signal = (own["Order"]=="SELL")*-1.0 + (own["Order"]=="BUY")
 # 	for symbol in own.columns.values:
@@ -58,8 +58,9 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	for symbol in port.columns.values:
 		if symbol not in ["Symbol", "Order", "Shares"]:
 			port[symbol] = port[symbol]*(port["Symbol"]==symbol)
-
-	
+	print port
+	print "++++"*44
+	prev_trade = own.iloc[0].copy()
 	for i in range(trades.shape[0]):
 		sym = trades.iloc[i].Symbol
 		date = pd.to_datetime(trades.iloc[i].name)
@@ -67,12 +68,18 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 		stock_order = trades.iloc[i].Order
 		n_shares = trades.iloc[i].Shares
 		
-		own.ix[date, sym] = n_shares*(stock_order=="BUY")
+		signal = (stock_order=="SELL")*-1.0 + (stock_order=="BUY")
 		
-		if n_shares<0:
-			shorts += n_shares*price
-		else:
-			longs += n_shares*price
+		own.ix[date, sym] = n_shares*signal
+# 		own.ix[:date, sym] = own.ix[:date, sym].ffill()
+# 		own.ix[date, sym] += own.shift(1).fillna(0.0).ix[date, sym]
+		temp = own.ix[date, :]
+		own.ix[date,sym] += prev_trade[sym]
+		prev_trade[sym] = temp[sym]
+# 		if own.ix[date, sym]<0:
+# 			shorts += n_shares*price
+# 		else:
+# 			longs += n_shares*price
 		
 		cash = np.sum(on_hand.ix[date,:])
 # 		print "Cash", cash
@@ -87,23 +94,27 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 		else:
 			on_hand.ix[date, sym] += n_shares*price
 			portfolio.ix[date, sym] -= n_shares
-
+	own = own.fillna(0)
+	print own 
+	
 	cash = np.sum(on_hand, axis=1)
 # 	print cash
-	
+	portfolio=own.copy()
 	for i in range(on_hand.shape[0]):
 		if i==0:
 			cash.iloc[i] += start_val
 		else:
 			cash.iloc[i] += cash.iloc[i-1]
 			portfolio.iloc[i] += portfolio.iloc[i-1]
+# 	print portfolio
+# 	portfolio = own
 	portfolio = portfolio*portvals
 	portfolio = np.sum(portfolio, axis=1)
 	
 	# 7 Scan cash and value to create total fund value
 	portvals = portfolio + cash
 	return portvals
-
+	
 def get_portfolio_value(prices, allocs, start_val):
 	"""Given a starting value and prices of
 stocks in portfolio with allocations

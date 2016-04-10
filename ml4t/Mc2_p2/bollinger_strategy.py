@@ -44,9 +44,13 @@ def test_code():
 	dates = pd.date_range(sd, ed)
 	syms=['GOOG','AAPL','GLD','XOM']
 	prices_all = get_data(syms, dates)
-	aapl = prices_all["AAPL"]
-	bollinger_bands(aapl)
-	print aapl
+	sma = pd.rolling_mean(prices_all[syms[0]], window=20) 
+	upper = sma + 2*pd.rolling_std(prices_all[syms[0]], window=20)
+	lower = sma - 2*pd.rolling_std(prices_all[syms[0]], window=20)
+	plt.plot(prices_all[syms[0]])
+	plt.plot(upper)
+	plt.plot(lower)
+	plt.show()
 
 if __name__ == "__main__":
 	test_code()

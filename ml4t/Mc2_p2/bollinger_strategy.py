@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import os
 from util import get_data, plot_data
 
-
 def bollinger_bands(data, window=20):
 	sma = pd.DataFrame( pd.rolling_mean(data, window=window))
 	upper = pd.DataFrame( sma + 2*pd.rolling_std(data, window=window) )
@@ -27,8 +26,11 @@ def bollinger_plot(data):
 	labels = labels[:-1]
 	labels[-1] = "Bollinger Bands"
 	plt.legend(handles, labels, loc="upper left")
+	plt.title("{} Adjusted Close".format(sym))
+	plt.ylabel("{} Prices".format(sym))
 	
 	position = None
+	print "Date,Symbol,Order,Shares"
 	for i in range(1,b_bands.shape[0]):
 		#Long Entry Signal
 		below_lower_before = (data.iloc[i-1]<b_bands["LOWER"].iloc[i-1]).values
@@ -82,10 +84,12 @@ def test_code():
 	# Read in adjusted closing prices for given symbols, date range
 	sd = dt.datetime(2007,12,31)
 	ed = dt.datetime(2009,12,31)
+##        sd = dt.datetime(2008,2,28)
+##	ed = dt.datetime(2009,12,29)
 	dates = pd.date_range(sd, ed)
-	syms=['IBM','GOOG','AAPL','GLD','XOM']
+	syms=['$SPX','IBM','GOOG','AAPL','GLD','XOM']
 	prices_all = get_data(syms, dates)
-	symbol = pd.DataFrame(prices_all[syms[0]])
+	symbol = pd.DataFrame(prices_all[syms[1]])
 	bollinger_plot(symbol)
 	
 if __name__ == "__main__":

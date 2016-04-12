@@ -84,8 +84,6 @@ def test_code():
 	# Read in adjusted closing prices for given symbols, date range
 	sd = dt.datetime(2007,12,31)
 	ed = dt.datetime(2009,12,31)
-##        sd = dt.datetime(2008,2,28)
-##	ed = dt.datetime(2009,12,29)
 	dates = pd.date_range(sd, ed)
 	syms=['$SPX','IBM','GOOG','AAPL','GLD','XOM']
 	prices_all = get_data(syms, dates)

@@ -5,12 +5,6 @@ import matplotlib.pyplot as plt
 import os
 from util import get_data, plot_data
 
-class Bollinger(object):
-	def __init__(self, window=20):
-		self.window=window
-		self.data = None
-		
-bg = Bollinger(10)
 
 def bollinger_bands(data, window=20):
 	sma = pd.DataFrame( pd.rolling_mean(data, window=window))

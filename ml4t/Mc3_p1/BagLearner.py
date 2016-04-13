@@ -6,7 +6,7 @@ import numpy as np
 
 class BagLearner(object):
 	
-    def __init__(self, learner = knn.KNNLearner, kwargs = {"k":3}, bags = 20, boost = False, verbose = False):
+    def __init__(self, learner, kwargs = {"k":3}, bags = 20, boost = False, verbose = False):
         self.learners = [learner(**kwargs) for i in range(0, bags)]
         self.boost = boost
         self.verbose = verbose
@@ -18,12 +18,12 @@ class BagLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-
-        # slap on 1s column so linear regression finds a constant term
-
+        n = dataX.shape[0]
+        n_prime = int(0.6 * n)
         # build and save the model
-        self.Xtrain = dataX
-        self.Ytrain = dataY
+        for learner in self.learners:
+			idx = np.random.choice(n, size=n_prime, replace=True)
+			learner.addEvidence(dataX[idx,:], dataY[idx])
         
     def query(self,points):
         """
@@ -32,10 +32,8 @@ class BagLearner(object):
         @returns the estimated values according to the saved model.
         """
         
-        
-        [learner.query(points) for learner in self.learners]
-        
-        return estimates
+        estimates = [learner.query(points) for learner in self.learners]
+        return np.mean(estimates, axis=0)
 
 if __name__=="__main__":
     print "the secret clue is 'zzyzx'"

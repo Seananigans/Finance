@@ -6,6 +6,7 @@ import numpy as np
 import math
 import LinRegLearner as lrl
 import KNNLearner as knn
+import BagLearner as bag
 
 if __name__=="__main__":
     inf = open('Data/ripple.csv')
@@ -25,10 +26,20 @@ if __name__=="__main__":
     print testY.shape
 
     # create a learner and train it
-#     learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
-#     learner = knn.KNNLearner(k=3, verbose = True) # create a LinRegLearner
-    learners = [lrl.LinRegLearner(verbose = True), 
-    			knn.KNNLearner(k=3, verbose = True),]
+    learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner
+    			knn.KNNLearner(k=3, verbose = True), # create a KNNLearner
+    			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
+    							kwargs = {"k":3}, 
+    							bags = 1, boost = False, 
+    							verbose = False),
+    			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
+    							kwargs = {"k":3}, 
+    							bags = 10, boost = False, 
+    							verbose = False),
+    			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
+    							kwargs = {"k":3}, 
+    							bags = 25, boost = False, 
+    							verbose = False)]
     for learner in learners:
         print learner.name
         learner.addEvidence(trainX, trainY) # train it

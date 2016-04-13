@@ -1,13 +1,15 @@
 """
-A simple wrapper for k-nearest neighbors regression.  (c) 2015 Tucker Balch
+A simple wrapper for k-nearest neighbors regression.
 """
 
 import numpy as np
 
-class LinRegLearner(object):
+class KNNLearner(object):
 
     def __init__(self, k=3, verbose = False):
         self.k = k
+        self.verbose = verbose
+        self.name = "K-Nearest Neighbors Learner"
     
     def addEvidence(self, dataX, dataY):
         """
@@ -28,7 +30,15 @@ class LinRegLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        return (self.model_coefs[:-1] * points).sum(axis = 1) + self.model_coefs[-1]
+        
+        estimates = np.zeros(points.shape[0])
+        
+        for i, point in enumerate(points):
+            diff = (point - self.Xtrain)
+            dist = np.sum(diff**2, axis=1)**0.5
+            nearest_neighbors = np.argsort(dist)[0:self.k]
+            estimates[i] = np.mean(self.Ytrain[nearest_neighbors])
+        return estimates
 
 if __name__=="__main__":
     print "the secret clue is 'zzyzx'"

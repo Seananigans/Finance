@@ -24,6 +24,8 @@ class BagLearner(object):
         for learner in self.learners:
 			idx = np.random.choice(n, size=n_prime, replace=True)
 			learner.addEvidence(dataX[idx,:], dataY[idx])
+		
+		errors = [np.abs(learner.query(dataX)-dataY) for learner in self.learners]
         
     def query(self,points):
         """

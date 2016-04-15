@@ -4,12 +4,14 @@ Test a learner.  (c) 2015 Tucker Balch
 
 import numpy as np
 import math
-import LinRegLearner as lrl
-import KNNLearner as knn
-import BagLearner as bag
+from learners import LinRegLearner as lrl
+from learners import KNNLearner as knn
+from learners import BagLearner as bag
 
-if __name__=="__main__":
-    inf = open('Data/simple.csv')
+if __name__=="__main__": 
+#     inf = open('simData/ripple.csv')
+#     inf = open('simData/simple.csv')
+    inf = open('simData/3_groups.csv')
     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
 
     # compute how much of the data is training and testing

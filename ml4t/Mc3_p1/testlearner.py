@@ -30,15 +30,18 @@ if __name__=="__main__":
     			knn.KNNLearner(k=3, verbose = True), # create a KNNLearner
     			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
     							kwargs = {"k":3}, 
-    							bags = 1, boost = False, 
+    							bags = 1, 
+    							boost = True, 
     							verbose = False),
     			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
     							kwargs = {"k":3}, 
-    							bags = 10, boost = False, 
+    							bags = 10, 
+    							boost = True, 
     							verbose = False),
     			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
     							kwargs = {"k":3}, 
-    							bags = 25, boost = False, 
+    							bags = 25, 
+    							boost = True, 
     							verbose = False)]
     for learner in learners:
         print learner.name

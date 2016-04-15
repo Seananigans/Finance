@@ -5,7 +5,7 @@ A simple wrapper for k-nearest neighbors regression.
 import numpy as np
 
 class BagLearner(object):
-	
+    
     def __init__(self, learner, kwargs = {"k":3}, bags = 20, boost = False, verbose = False):
         self.learners = [learner(**kwargs) for i in range(0, bags)]
         self.boost = boost
@@ -21,11 +21,16 @@ class BagLearner(object):
         n = dataX.shape[0]
         n_prime = int(0.6 * n)
         # build and save the model
+        idx = np.random.choice(n, size=n_prime, replace=True)
+
         for learner in self.learners:
-			idx = np.random.choice(n, size=n_prime, replace=True)
-			learner.addEvidence(dataX[idx,:], dataY[idx])
-		
-		errors = [np.abs(learner.query(dataX)-dataY) for learner in self.learners]
+            learner.addEvidence(dataX[idx,:], dataY[idx])
+            if self.boost:
+                errors = np.abs(learner.query(dataX)-dataY)
+                weights = errors/sum(errors)
+                idx = np.random.choice(n, size=n_prime, replace=True, p=weights)
+            else:
+                idx = np.random.choice(n, size=n_prime, replace=True)
         
     def query(self,points):
         """

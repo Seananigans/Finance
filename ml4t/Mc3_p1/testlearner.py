@@ -9,7 +9,7 @@ import KNNLearner as knn
 import BagLearner as bag
 
 if __name__=="__main__":
-    inf = open('Data/ripple.csv')
+    inf = open('Data/simple.csv')
     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
 
     # compute how much of the data is training and testing
@@ -31,17 +31,22 @@ if __name__=="__main__":
     			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
     							kwargs = {"k":3}, 
     							bags = 1, 
-    							boost = True, 
+    							boost = False, 
     							verbose = False),
     			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
     							kwargs = {"k":3}, 
     							bags = 10, 
     							boost = True, 
     							verbose = False),
-    			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
-    							kwargs = {"k":3}, 
-    							bags = 25, 
-    							boost = True, 
+    			bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
+    							kwargs = {}, 
+    							bags = 1, 
+    							boost = False, 
+    							verbose = False),
+    			bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
+    							kwargs = {}, 
+    							bags = True, 
+    							boost = False, 
     							verbose = False)]
     for learner in learners:
         print learner.name

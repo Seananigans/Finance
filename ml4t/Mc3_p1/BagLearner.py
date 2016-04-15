@@ -10,8 +10,11 @@ class BagLearner(object):
         self.learners = [learner(**kwargs) for i in range(0, bags)]
         self.boost = boost
         self.verbose = verbose
-        self.name = "Bag Learner"
-    
+        try:
+        	self.name = "Bag Learner: {}".format(self.learners[0].name)
+        except AttributeError:
+        	self.name = "Bag Learner"
+        	
     def addEvidence(self, dataX, dataY):
         """
         @summary: Add training data to learner
@@ -19,18 +22,17 @@ class BagLearner(object):
         @param dataY: the Y training values
         """
         n = dataX.shape[0]
-        n_prime = int(0.6 * n)
         # build and save the model
-        idx = np.random.choice(n, size=n_prime, replace=True)
+        idx = np.random.choice(n, size=n, replace=True)
 
         for learner in self.learners:
             learner.addEvidence(dataX[idx,:], dataY[idx])
             if self.boost:
                 errors = np.abs(learner.query(dataX)-dataY)
                 weights = errors/sum(errors)
-                idx = np.random.choice(n, size=n_prime, replace=True, p=weights)
+                idx = np.random.choice(n, size=n, replace=True, p=weights)
             else:
-                idx = np.random.choice(n, size=n_prime, replace=True)
+                idx = np.random.choice(n, size=n, replace=True)
         
     def query(self,points):
         """

@@ -11,7 +11,8 @@ from learners import BagLearner as bag
 if __name__=="__main__": 
 #     inf = open('simData/ripple.csv')
 #     inf = open('simData/simple.csv')
-    inf = open('simData/3_groups.csv')
+#     inf = open('simData/3_groups.csv')
+    inf = open('simData/axp_example.csv')
     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
 
     # compute how much of the data is training and testing

@@ -9,7 +9,7 @@ class KNNLearner(object):
     def __init__(self, k=3, verbose = False):
         self.k = k
         self.verbose = verbose
-        self.name = "K-Nearest Neighbors Learner"
+        self.name = "{}-Nearest Neighbors Learner".format(k)
     
     def addEvidence(self, dataX, dataY):
         """

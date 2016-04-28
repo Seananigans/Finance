@@ -10,12 +10,25 @@ symbols = ['AAPL']
 df = get_data(symbols, dates, False)
 df = df.ffill()
 df = df.bfill()
+
+# Add Moving Average Indicator
 mva = pd.rolling_mean(df, 20)
 mva.columns = ["Moving Average"]
 df1 = df.join(mva)
+
+# Add Bollinger Indicator
+from indicators.Bollinger import Bollinger
+boll = Bollinger()
+boll.addEvidence(df)
+boll = boll.getIndicator()
+df1 = df1.join(boll)
+
+# Add output column
 shifted = df.shift(-1)
 shifted.columns = ["Output"]
 df1 = df1.join(shifted)
+
+# Drop rows without information (ie. NaN for Lagging Indicators)
 df1 = df1.dropna()
 
 # Write csv to simData folder so learners can be tested on the financial data

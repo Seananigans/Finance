@@ -23,7 +23,7 @@ boll.addEvidence(df)
 boll = boll.getIndicator()
 df1 = df1.join(boll)
 
-# Add output column
+# Add output column ***(output should be returns, not prices)***
 shifted = df.shift(-1)
 shifted.columns = ["Output"]
 df1 = df1.join(shifted)

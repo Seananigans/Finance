@@ -11,9 +11,9 @@ class BagLearner(object):
         self.boost = boost
         self.verbose = verbose
         try:
-        	self.name = "Bag Learner: {}".format(self.learners[0].name)
+        	self.name = "{} Bag Learner: {}".format(bags, self.learners[0].name)
         except AttributeError:
-        	self.name = "Bag Learner"
+        	self.name = "{} Bag Learner".format(bags)
         	
     def addEvidence(self, dataX, dataY):
         """

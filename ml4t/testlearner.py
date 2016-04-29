@@ -43,12 +43,12 @@ if __name__=="__main__":
     							verbose = False),
     			bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
     							kwargs = {}, 
-    							bags = 1, 
-    							boost = False, 
+    							bags = 10, 
+    							boost = True, 
     							verbose = False),
     			bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
     							kwargs = {}, 
-    							bags = True, 
+    							bags = 50, 
     							boost = False, 
     							verbose = False)]
     for learner in learners:

@@ -18,15 +18,20 @@ df1 = df.join(mva)
 
 # Add Bollinger Indicator
 from indicators.Bollinger import Bollinger
-boll = Bollinger()
-boll.addEvidence(df)
-boll = boll.getIndicator()
-df1 = df1.join(boll)
+from indicators.Momentum import Momentum
+from indicators.Volatility import Volatility
+
+indicators = [Bollinger(), Momentum(), Volatility()]
+for indicator in indicators:
+	indicator.addEvidence(df)
+	ind_values = indicator.getIndicator()
+	df1.join(ind_values)
 
 # Add output column ***(output should be returns, not prices)***
-shifted = df.shift(-1)
-shifted.columns = ["Output"]
-df1 = df1.join(shifted)
+shifted = df.shift(-5)
+returns = shifted/df - 1
+returns.columns=["Returns"]
+df1 = df1.join(returns)
 
 # Drop rows without information (ie. NaN for Lagging Indicators)
 df1 = df1.dropna()

@@ -27,6 +27,9 @@ if __name__=="__main__":
 
     print testX.shape
     print testY.shape
+    
+    trainX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
+    testX = ( testX - trainX.mean(axis=0) )/trainX.std(axis=0)
 
     # create a learner and train it
     learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner

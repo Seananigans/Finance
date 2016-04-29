@@ -20,8 +20,9 @@ df1 = df.join(mva)
 from indicators.Bollinger import Bollinger
 from indicators.Momentum import Momentum
 from indicators.Volatility import Volatility
+from indicators.SimpleMA import SimpleMA
 
-indicators = [Bollinger(), Momentum(), Volatility()]
+indicators = [Bollinger(), Momentum(), Volatility(), SimpleMA()]
 for indicator in indicators:
 	indicator.addEvidence(df)
 	ind_values = indicator.getIndicator()

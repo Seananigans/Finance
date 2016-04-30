@@ -4,10 +4,23 @@ Test a learner.  (c) 2015 Tucker Balch
 
 import numpy as np
 import math
+import matplotlib.pyplot as plt
+import pandas as pd
 from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
 
+def mean_normalization(trainX, testX):
+    trnX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
+    tstX = ( testX - trainX.mean(axis=0) )/trainX.std(axis=0)
+    return trnX, tstX
+    
+def max_normalization(trainX, testX):
+    trnX = trainX / trainX.max(axis=0)
+    tstX = testX / trainX.max(axis=0)
+    return trnX, tstX
+	
+	
 if __name__=="__main__": 
 #     inf = open('simData/ripple.csv')
 #     inf = open('simData/simple.csv')
@@ -28,19 +41,13 @@ if __name__=="__main__":
     print testX.shape
     print testY.shape
     
-    trainX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
-    testX = ( testX - trainX.mean(axis=0) )/trainX.std(axis=0)
-
+    trainX, testX = mean_normalization(trainX, testX)
+    
     # create a learner and train it
     learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner
-    			knn.KNNLearner(k=3, verbose = True), # create a KNNLearner
+    			knn.KNNLearner(k=5, verbose = True), # create a KNNLearner
     			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
-    							kwargs = {"k":3}, 
-    							bags = 1, 
-    							boost = False, 
-    							verbose = False),
-    			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
-    							kwargs = {"k":3}, 
+    							kwargs = {"k":5}, 
     							bags = 10, 
     							boost = True, 
     							verbose = False),
@@ -76,6 +83,8 @@ if __name__=="__main__":
         c = np.corrcoef(predY, y=testY)
         print "corr: ", c[0,1]
         print
+        
+        
 
     #learners = []
     #for i in range(0,10):

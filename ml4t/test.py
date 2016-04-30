@@ -8,13 +8,14 @@ dates = pd.date_range(start_date, end_date)
 symbols = ['AAPL']
 
 df = get_data(symbols, dates, False)
+vol = df['Volume']
+vol = vol.fillna(0.0)
+
+df = df.ix[:,df.columns != "Volume"]
 df = df.ffill()
 df = df.bfill()
 
-# Add Moving Average Indicator
-mva = pd.rolling_mean(df, 20)
-mva.columns = ["Moving Average"]
-df1 = df.join(mva)
+df1 = df.join(vol)
 
 # Add Bollinger Indicator
 from indicators.Bollinger import Bollinger

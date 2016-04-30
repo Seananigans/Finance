@@ -17,7 +17,7 @@ def get_data(symbols, dates, addSPY=True):
 
     for symbol in symbols:
         df_temp = pd.read_csv(symbol_to_path(symbol), index_col='Date',
-                parse_dates=True, usecols=['Date', 'Adj Close'], na_values=['nan'])
+                parse_dates=True, usecols=['Date', 'Adj Close','Volume'], na_values=['nan'])
         df_temp = df_temp.rename(columns={'Adj Close': symbol})
         df = df.join(df_temp)
         if symbol == 'SPY':  # drop dates SPY did not trade

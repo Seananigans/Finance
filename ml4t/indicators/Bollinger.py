@@ -11,9 +11,8 @@ class Bollinger(object):
     def getIndicator(self):
         mva = pd.rolling_mean(self.data, self.window)
         sd = pd.rolling_std(self.data, self.window)
-
         boll = (self.data - mva) / (2*sd)
-
-        boll.columns = ["Bollinger"]
+        
+        boll.columns = ["Bollinger_"+x for x in boll.columns]
 
         return boll

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-class SimpleMA(object):
+class ExponentialMA(object):
     def __init__(self, window=20):
         self.window = window
 
@@ -9,7 +9,7 @@ class SimpleMA(object):
         self.data = data
 
     def getIndicator(self):
-        sma = self.data/pd.rolling_mean(self.data, self.window) - 1
-        sma.columns = ["SMA_"+x for x in sma.columns]
+        ema = self.data/pd.ewma(self.data, span=self.window) - 1
+        ema.columns = ["EMA_"+x for x in ema.columns]
 
-        return sma
+        return ema

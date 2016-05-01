@@ -12,6 +12,6 @@ class Volatility(object):
     	returns = self.data/self.data.shift(1) - 1
         vol = pd.rolling_std(returns, self.window) * np.sqrt(255)
 
-        vol.columns = ["Volatility"]
+        vol.columns = ["Volatility_"+x for x in vol.columns]
 
         return vol

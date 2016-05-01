@@ -25,7 +25,7 @@ if __name__=="__main__":
 #     inf = open('simData/ripple.csv')
 #     inf = open('simData/simple.csv')
 #     inf = open('simData/3_groups.csv')
-    inf = open('simData/axp_example.csv')
+    inf = open('simData/example.csv')
     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
 
     # compute how much of the data is training and testing
@@ -48,7 +48,7 @@ if __name__=="__main__":
     			knn.KNNLearner(k=5, verbose = True), # create a KNNLearner
     			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
     							kwargs = {"k":5}, 
-    							bags = 10, 
+    							bags = 50, 
     							boost = True, 
     							verbose = False),
     			bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner

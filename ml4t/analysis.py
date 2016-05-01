@@ -25,7 +25,6 @@ def assess_portfolio(sd = dt.datetime(2008,1,1), ed = dt.datetime(2009,1,1), \
     port_val = get_portfolio_value(prices, allocs, sv)
     
     # Get portfolio statistics (note: std_daily_ret = volatility)
-    cr, adr, sddr, sr = [0.25, 0.001, 0.0005, 2.1] # add code here to compute stats
     cr, adr, sddr, sr = get_portfolio_stats(port_val, rfr, sf)
     
     # Compare daily portfolio value with SPY using a normalized plot
@@ -82,20 +81,20 @@ def test_code():
 ##    symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
 ##    allocations = [0.2, 0.3, 0.4, 0.1]
     #Example 1
-##    start_date = dt.datetime(2010,1,1)
-##    end_date = dt.datetime(2010,12,31)
-##    symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
-##    allocations = [0.2, 0.3, 0.4, 0.1]
+    start_date = dt.datetime(2010,1,1)
+    end_date = dt.datetime(2010,12,31)
+    symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
+    allocations = [0.2, 0.3, 0.4, 0.1]
     #Example 2
 ##    start_date = dt.datetime(2010,1,1)
 ##    end_date = dt.datetime(2010,12,31)
 ##    symbols = ['AXP', 'HPQ', 'IBM', 'HNZ']
 ##    allocations = [0.0, 0.0, 0.0, 1.0]
     #Example 3
-    start_date = dt.datetime(2010,6,1)
-    end_date = dt.datetime(2010,12,31)
-    symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
-    allocations = [0.2, 0.3, 0.4, 0.1]
+#     start_date = dt.datetime(2010,6,1)
+#     end_date = dt.datetime(2010,12,31)
+#     symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
+#     allocations = [0.2, 0.3, 0.4, 0.1]
     start_val = 1000000  
     risk_free_rate = 0.0
     sample_freq = 252

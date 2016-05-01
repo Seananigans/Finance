@@ -3,10 +3,11 @@ A simple wrapper for k-nearest neighbors regression.
 """
 
 import numpy as np
+from KNNLearner import KNNLearner
 
 class BagLearner(object):
     
-    def __init__(self, learner, kwargs = {"k":3}, bags = 20, boost = False, verbose = False):
+    def __init__(self, learner=KNNLearner, kwargs = {"k":3}, bags = 20, boost = False, verbose = False):
         self.learners = [learner(**kwargs) for i in range(0, bags)]
         self.boost = boost
         self.verbose = verbose

@@ -32,7 +32,6 @@ class KNNLearner(object):
         """
         
         estimates = np.zeros(points.shape[0])
-        
         for i, point in enumerate(points):
             diff = (point - self.Xtrain)
             dist = np.sum(diff**2, axis=1)**0.5

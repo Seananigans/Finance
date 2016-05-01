@@ -19,15 +19,19 @@ def max_normalization(trainX, testX):
     trnX = trainX / trainX.max(axis=0)
     tstX = testX / trainX.max(axis=0)
     return trnX, tstX
-	
-	
+    
+    
 if __name__=="__main__": 
 #     inf = open('simData/ripple.csv')
 #     inf = open('simData/simple.csv')
 #     inf = open('simData/3_groups.csv')
-    inf = open('simData/example.csv')
-    data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
+#     inf = open('simData/example.csv')
+#     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
 
+    # get actual data
+    df = pd.read_csv("simData/example.csv", index_col='Date',
+                    parse_dates=True, na_values=['nan'])
+    data = df.values
     # compute how much of the data is training and testing
     train_rows = int(math.floor(0.6* data.shape[0]))
     test_rows = int(data.shape[0] - train_rows)
@@ -45,22 +49,22 @@ if __name__=="__main__":
     
     # create a learner and train it
     learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner
-    			knn.KNNLearner(k=5, verbose = True), # create a KNNLearner
-    			bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
-    							kwargs = {"k":5}, 
-    							bags = 50, 
-    							boost = True, 
-    							verbose = False),
-    			bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
-    							kwargs = {}, 
-    							bags = 10, 
-    							boost = True, 
-    							verbose = False),
-    			bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
-    							kwargs = {}, 
-    							bags = 50, 
-    							boost = False, 
-    							verbose = False)]
+                knn.KNNLearner(k=5, verbose = True), # create a KNNLearner
+                bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
+                                kwargs = {"k":5}, 
+                                bags = 50, 
+                                boost = True, 
+                                verbose = False),
+                bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
+                                kwargs = {}, 
+                                bags = 10, 
+                                boost = True, 
+                                verbose = False),
+                bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
+                                kwargs = {}, 
+                                bags = 50, 
+                                boost = False, 
+                                verbose = False)]
     for learner in learners:
         print learner.name
         learner.addEvidence(trainX, trainY) # train it
@@ -83,7 +87,11 @@ if __name__=="__main__":
         c = np.corrcoef(predY, y=testY)
         print "corr: ", c[0,1]
         print
-        
+        plt.plot(df.ix[train_rows:,-1].index, predY)
+        plt.plot(df.ix[train_rows:,-1].index, testY)
+        plt.show()
+        plt.plot(predY, testY, ".")
+        plt.show()
         
 
     #learners = []

@@ -19,6 +19,7 @@ def get_data(symbols, dates, addSPY=True, vol=False):
     	if vol:
 			df_temp = pd.read_csv(symbol_to_path(symbol), index_col='Date',
 					parse_dates=True, usecols=['Date', 'Volume'], na_values=['nan'])
+			df_temp = df_temp.rename(columns={'Volume': 'Volume_'+symbol})
         else:
 			df_temp = pd.read_csv(symbol_to_path(symbol), index_col='Date',
 					parse_dates=True, usecols=['Date', 'Adj Close'], na_values=['nan'])

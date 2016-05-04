@@ -6,8 +6,15 @@
 	</head>
 	<body>
 		{% block content %}{% endblock %}
+		<form action="{{ url_for('save') }}" method="POST">
+			<label> Name your bear </label>
+			<input type="text" name="name" values="" autofocus>
+			<input type="submit" value="Let's build it!">
+		</form>
 		<p>Brought to you by Sean Hegarty</p>
+		<!-- 
 		<script src="/static/scripts.js"></script>
+		-->
 		{% block scripts %}{% endblock %}
 	</body>
 </html>

@@ -8,7 +8,8 @@
 		{% block content %}{% endblock %}
 		<form action="{{ url_for('save') }}" method="POST">
 			<label> Name your bear </label>
-			<input type="text" name="name" values="" autofocus>
+			<input type="text" name="num1" values="{{ saves.get('num1','') }}" autofocus>
+			<input type="text" name="num2" values="{{ saves.get('num2','') }}" autofocus>
 			<input type="submit" value="Let's build it!">
 		</form>
 		<p>Brought to you by Sean Hegarty</p>

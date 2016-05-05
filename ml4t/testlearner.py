@@ -20,6 +20,20 @@ def max_normalization(trainX, testX):
     tstX = testX / trainX.max(axis=0)
     return trnX, tstX
     
+def plot_histogram(trainY):
+    mn = trainY.mean()
+    sd = trainY.std()
+    plt.hist(trainY)
+    plt.xlabel("Daily Returns")
+    plt.ylabel("Counts")
+    mean_line = plt.axvline(mn, color="k", lw=3)
+    std_line = plt.axvline(mn + sd, color="r", lw=2)
+    plt.axvline(mn - sd, color="r", lw=2)
+    plt.legend([mean_line, std_line],
+               ["Avg. {} Day\nReturn:   {}%".format(5,round(mn*100,2)),
+                "Std. Dev.\nof Returns: {}%".format(round(sd*100,2))]
+               )
+    plt.show()
     
 if __name__=="__main__":
 
@@ -40,7 +54,9 @@ if __name__=="__main__":
 
     print testX.shape
     print testY.shape
-    
+    print "Average Return: {}".format(round( trainY.mean(),3 ))
+    plot_histogram(trainY)
+    exit()
     trainX, testX = mean_normalization(trainX, testX)
     
     # create a learner and train it
@@ -94,7 +110,7 @@ if __name__=="__main__":
         predicted = predicted.join(pd.DataFrame(testY,
                            columns=["Actual"],
                            index=df.ix[train_rows:,-1].index))
-        if i%4==0:
+        if i%5==0:
             plt.figure(1)
             plt.subplot(211)
             pre, = plt.plot(predicted[['Predicted']])

@@ -129,13 +129,4 @@ def test_create_training_data():
     create_training_data(symbol, start_date, end_date)
 
 if __name__ == "__main__":
-# 	start_date = dt.datetime(2004,1,1)
-# 	end_date = dt.datetime(2006,1,1)
-# 	dates =  pd.date_range(start_date, end_date)
-# 	df = get_data(['AAPL'], dates, addSPY=False)
-# 	df = df.ffill().bfill()
-# 	ot_df = df.copy().shift(-5)/df
-# 	df.columns = ['Present']
-# 	print df.join(ot_df)
-# 	exit()
 	test_create_training_data()

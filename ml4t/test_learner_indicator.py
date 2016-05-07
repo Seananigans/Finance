@@ -31,7 +31,7 @@ def test_run():
     print "Test set from ", test_dates[0], " to ", test_dates[-1]
     
     #Get data to be predicted
-    future_return = stock_prices / stock_prices.shift( 5 ) - 1
+    future_return = stock_prices.shift(-5) / stock_prices - 1
     future_return.columns = ['Prediction']
     
     data_set = future_return

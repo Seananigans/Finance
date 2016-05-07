@@ -46,8 +46,11 @@ def plot_histogram(trainY):
 if __name__=="__main__":
 
 	# get actual data
-	df = pd.read_csv("simData/example.csv", index_col='Date',
+	filename= "simData/example.csv"
+	
+	df = pd.read_csv(filename, index_col='Date',
 					parse_dates=True, na_values=['nan'])
+					
 	data = df.values
 	
 	# compute how much of the data is training and testing
@@ -71,19 +74,23 @@ if __name__=="__main__":
 # 	learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner
 # 				knn.KNNLearner(k=6, verbose = True)] # create a KNNLearner
    
-	learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner
-			   knn.KNNLearner(k=6, verbose = True), # create a KNNLearner
-			   bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
-							   kwargs = {"k":6}, 
-							   bags = 10, 
+# 	learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner
+# 			   knn.KNNLearner(k=6, verbose = True), # create a KNNLearner
+# 			   bag.BagLearner(learner = knn.KNNLearner, # create a BagLearner
+# 							   kwargs = {"k":6}, 
+# 							   bags = 10, 
+# 							   boost = True, 
+# 							   verbose = False),
+# 			   bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
+# 							   kwargs = {}, 
+# 							   bags = 10, 
+# 							   boost = True, 
+# 							   verbose = False)]
+	learners = [bag.BagLearner(learner = knn.KNNLearner,#lrl.LinRegLearner, # create a BagLearner
+							   kwargs = {"k":3}, 
+							   bags = i, 
 							   boost = True, 
-							   verbose = False),
-			   bag.BagLearner(learner = lrl.LinRegLearner, # create a BagLearner
-							   kwargs = {}, 
-							   bags = 10, 
-							   boost = True, 
-							   verbose = False)]
-	
+							   verbose = False) for i in range(5,100,5)]
 # 	learners = [knn.KNNLearner(k=i) for i in range(1,25)]
 	
 	cors, rmsestrain, rmsestest = [], [], []

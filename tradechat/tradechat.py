@@ -49,3 +49,24 @@ def show_entries():
 	cursor = db.execute(query)
 	comments = cursor.fetchall()
 	return render_template('show_entries.html', comments = comments)
+	
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+	"""Registers a new user in the TC database"""
+	error = None
+	if request.method == 'POST':
+		db.et_db()
+		if request.form['username'] == "" or request.form['password'] =="":
+			error = "Provide both a username and a password."
+			# both fields have to be nonempty
+		else:
+			db.execute('insert into users (name, password) values (?, ?)',
+						[request.form['username'], request.form['password']])
+			db.commit()
+			session['logged_in'] = True
+			# directly log in user
+			flash('You were successfully registered.')
+			app.config.update(dict(USERNAME=request.form['username']))
+			return redirect(url_for('show_entries'))
+	return render_template('register.html', error=error)
+

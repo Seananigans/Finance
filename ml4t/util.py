@@ -2,6 +2,7 @@
 
 import os
 import datetime as dt
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -53,7 +54,8 @@ def create_training_data(symbol, start_date, end_date,
                                        'Momentum',
                                        'Volatility',
                                        'SimpleMA',
-                                       'ExponentialMA']
+                                       'ExponentialMA',
+                                       'Lagging']
                          ):
     
         """Retrieve historical data based off start and end dates for selected symbol.
@@ -101,7 +103,15 @@ Create and store a training dataframe:
         if "ExponentialMA" in indicators:
                 from indicators.ExponentialMA import ExponentialMA
                 indicator_list.append(ExponentialMA())
+        if "Lagging" in indicators:
+            from indicators.Lagging import Lag
 
+        for i in range(1,20):
+            lag = Lag(i)
+            lag.addEvidence(adj_close)
+            lag_values = lag.getIndicator()
+            df1 = df1.join(lag_values)
+        
         for indicator in indicator_list:
                 indicator.addEvidence(adj_close)
                 ind_values = indicator.getIndicator()
@@ -117,14 +127,21 @@ Create and store a training dataframe:
 
         # Drop rows without information (ie. NaN for Lagging Indicators)
         df1 = df1.dropna()
-
+        ind_names = [col for col in df1.columns
+               if not col.startswith("Lag") and not col.startswith("Returns")]
+        for name in ind_names:
+            print "{}\t".format(name), np.corrcoef(df1[name],
+                              df1["Returns_"+symbol])[0][1]
+        for i in range(1,20):
+            print "Lag {}\t".format(i), np.corrcoef(df1["Lag{}_".format(i) + symbol],
+                              df1["Returns_"+symbol])[0][1]
         # Write csv to simData folder so learners can be tested on the financial data
         df1.to_csv(filename, index_label="Date")
 
 def test_create_training_data():
     start_date = dt.datetime(2004,1,1)
     end_date = dt.datetime(2006,1,1)
-    symbol = 'AAPL'
+    symbol = 'IBM'
     
     create_training_data(symbol, start_date, end_date)
 

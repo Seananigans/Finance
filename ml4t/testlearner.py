@@ -65,7 +65,20 @@ if __name__=="__main__":
 
 	print testX.shape
 	print testY.shape
-	print "Average Return: {}".format(round( trainY.mean(),3 ))
+	print "Average Training Return: {}".format(round( trainY.mean(),3 ))
+	print "Average Training Return: {}".format(round( testY.mean(),3 ))
+	err = np.zeros(testY.shape)
+	for i in range(err.shape[0]):
+            err[i] = trainY.mean()
+	print "RMSE of Train Average on Test Set: {}".format(
+            math.sqrt(((testY - err) ** 2).sum()/testY.shape[0])
+            )
+	err[0] += 0.00000001
+	print "Correlation of Train Average on Test Set: {}".format(
+            np.corrcoef(err, y=testY)[0,1]
+            )
+	for i in range(trainX.shape[1]):
+            print np.corrcoef(trainX[:,i], trainY)[0][1]
 # 	plot_histogram(trainY)
 	
 	trainX, testX = mean_normalization(trainX, testX)
@@ -86,12 +99,12 @@ if __name__=="__main__":
 # 							   bags = 10, 
 # 							   boost = True, 
 # 							   verbose = False)]
-	learners = [bag.BagLearner(learner = knn.KNNLearner,#lrl.LinRegLearner, # create a BagLearner
-							   kwargs = {"k":3}, 
-							   bags = i, 
-							   boost = True, 
-							   verbose = False) for i in range(5,100,5)]
-# 	learners = [knn.KNNLearner(k=i) for i in range(1,25)]
+	learners = [bag.BagLearner(learner = knn.KNNLearner, #lrl.LinRegLearner,# create a BagLearner
+                                   kwargs = {"k":3}, #{},#
+                                   bags = i,
+                                   boost = True,
+                                   verbose = False) for i in range(5,100,5)]
+#   	learners = [knn.KNNLearner(k=i) for i in range(5,100,5)]
 	
 	cors, rmsestrain, rmsestest = [], [], []
 	for i, learner in enumerate(learners):
@@ -111,11 +124,11 @@ if __name__=="__main__":
 
 		# evaluate out of sample
 		predY = learner.query(testX) # get the predictions
-		rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
+		rmse = math.sqrt(((testY[:20] - predY[:20]) ** 2).sum()/testY.shape[0])
 		print
 		print "Out of sample results"
 		print "RMSE: ", rmse
-		c = np.corrcoef(predY, y=testY)
+		c = np.corrcoef(predY[:20], y=testY[:20])
 		print "corr: ", c[0,1]
 		print
 		cors.append(c[0,1])

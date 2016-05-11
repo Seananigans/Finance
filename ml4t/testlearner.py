@@ -9,6 +9,7 @@ import pandas as pd
 from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
+from learners import SVMLearner as svm
 
 def mean_normalization(trainX, testX):
     trnX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
@@ -39,8 +40,7 @@ def plot_histogram(trainY):
     labels[mns.shape[0]:] = [
         "Std. Dev.\nof Returns: {}%".format(round(sd*100,2)) for sd in sds]
     plt.legend(lines,#[mean_line, std_line],
-               labels
-               )
+               labels)
     plt.show()
     
 if __name__=="__main__":
@@ -52,6 +52,7 @@ if __name__=="__main__":
 					parse_dates=True, na_values=['nan'])
 					
 	data = df.values
+	cols = [col for col in df.columns if not col.startswith("Returns")]
 	
 	# compute how much of the data is training and testing
 	train_rows = int(math.floor(0.6* data.shape[0]))
@@ -99,13 +100,12 @@ if __name__=="__main__":
 # 							   bags = 10, 
 # 							   boost = True, 
 # 							   verbose = False)]
-	learners = [bag.BagLearner(learner = knn.KNNLearner, #lrl.LinRegLearner,# create a BagLearner
-                                   kwargs = {"k":3}, #{},#
+	learners = [bag.BagLearner(learner = lrl.LinRegLearner,# knn.KNNLearner, #create a BagLearner
+                                   kwargs = {},#{"k":3}, #
                                    bags = i,
                                    boost = True,
                                    verbose = False) for i in range(5,100,5)]
-#   	learners = [knn.KNNLearner(k=i) for i in range(5,100,5)]
-	
+    
 	cors, rmsestrain, rmsestest = [], [], []
 	for i, learner in enumerate(learners):
 		print learner.name
@@ -124,11 +124,11 @@ if __name__=="__main__":
 
 		# evaluate out of sample
 		predY = learner.query(testX) # get the predictions
-		rmse = math.sqrt(((testY[:20] - predY[:20]) ** 2).sum()/testY.shape[0])
+		rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
 		print
 		print "Out of sample results"
 		print "RMSE: ", rmse
-		c = np.corrcoef(predY[:20], y=testY[:20])
+		c = np.corrcoef(predY, y=testY)
 		print "corr: ", c[0,1]
 		print
 		cors.append(c[0,1])
@@ -152,11 +152,17 @@ if __name__=="__main__":
 			plt.xlabel("Predicted Returns")
 			plt.ylabel("Actual Returns")
 			plt.show()
+		df1 = pd.DataFrame(testX,
+						   columns=cols,
+						   index=df.ix[train_rows:,:].index)
+		df1 = df1.join(predicted)
+		df1.to_csv("test.csv", index_label="Date")
 	
-	plt.plot(range(len(cors)), cors)
-	plt.ylabel("Correlation")
-	plt.xlabel("Model Complexity")
-	plt.show()
+	if len(learners)>4:
+		plt.plot(range(len(cors)), cors)
+		plt.ylabel("Correlation")
+		plt.xlabel("Model Complexity")
+		plt.show()
 	
 	# Plot testing & training error on the same plot to 
 	# show how error behaves with different models.

@@ -36,7 +36,7 @@ def init_db():
 		db.commit()
 		
 @app.teardown_appcontext
-def close_db():
+def close_db(error):
 	''' Closes the TC database at the end of the request. '''
 	if hasattr(g, 'sqlite_db'):
 		g.sqlite_db.close()
@@ -70,3 +70,48 @@ def register():
 			return redirect(url_for('show_entries'))
 	return render_template('register.html', error=error)
 
+@app.route('/register', methods=["GET","POST"])
+def login():
+	"'Logs user in'"
+	error = None
+	if request.method == "POST":
+		db = get_db()
+		try:
+			query = 'select id from users where name = ? and password=?'
+			id = db.execute(query, (request.form['username'], 
+									request.form['password'])).fetchone()[0]
+				# fails if record with provided username and password 
+				# is not found
+			session['logged_in'] = True
+			flash('You are now logged in.')
+			app.config.update(dict(USERNAME=request.form['username']))
+			return redirect(url_for('show_entries'))
+		except:
+			error = "User not found or wrong password."
+	return render_template('login.html', error=error)
+	
+app.route('/add', methods=['POST'])
+def add_entry():
+	"' Adds entry to the TC database. '"
+	if not session.get('logged_in'):
+		abort(401)
+	db = get_db()
+	now = dt.datetime.now()
+	db.execute('insert into comments (comment, user, time) values (?,?,?)',
+			[request.form['text'], app.config['USERNAME'], str(now)[:-7]])
+	db.commit()
+	flash('Your comment was successfully added.')
+	return redirect(url_for('show_entries'))
+
+app.route('/logout')
+def logout():
+	""" Logs out the current user. """
+	session.pop('logged_in', None)
+	flash('You were logged out.')
+	return redirect(url_for('show_entries'))
+
+
+if __name__=='__main__':
+	init_db()
+	
+	app.run()

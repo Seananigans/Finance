@@ -92,7 +92,7 @@ def login():
 	
 app.route('/add', methods=['POST'])
 def add_entry():
-	"' Adds entry to the TC database. '"
+	""" Adds entry to the TC database. """
 	if not session.get('logged_in'):
 		abort(401)
 	db = get_db()

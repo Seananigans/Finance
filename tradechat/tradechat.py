@@ -55,7 +55,7 @@ def register():
 	"""Registers a new user in the TC database"""
 	error = None
 	if request.method == 'POST':
-		db.et_db()
+		db = get_db()
 		if request.form['username'] == "" or request.form['password'] =="":
 			error = "Provide both a username and a password."
 			# both fields have to be nonempty
@@ -70,7 +70,7 @@ def register():
 			return redirect(url_for('show_entries'))
 	return render_template('register.html', error=error)
 
-@app.route('/register', methods=["GET","POST"])
+@app.route('/login', methods=["GET","POST"])
 def login():
 	"'Logs user in'"
 	error = None
@@ -90,7 +90,7 @@ def login():
 			error = "User not found or wrong password."
 	return render_template('login.html', error=error)
 	
-app.route('/add', methods=['POST'])
+@app.route('/add', methods=['POST'])
 def add_entry():
 	""" Adds entry to the TC database. """
 	if not session.get('logged_in'):
@@ -103,7 +103,7 @@ def add_entry():
 	flash('Your comment was successfully added.')
 	return redirect(url_for('show_entries'))
 
-app.route('/logout')
+@app.route('/logout')
 def logout():
 	""" Logs out the current user. """
 	session.pop('logged_in', None)

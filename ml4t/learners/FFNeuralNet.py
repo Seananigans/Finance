@@ -39,10 +39,10 @@ class LeakyReLU(object):
         return np.maximum(0.01, z>0)
 
 class Sigmoid(object):
-    """Leaky Rectified Linear Unit."""
+    """Sigmoid activation."""
     @staticmethod
     def fn(z):
-        return np.multiply(z, gt_zero+leq_zero*0.01)
+        return 1./(1.-np.exp(-z))
 
     @staticmethod
     def prime(z):

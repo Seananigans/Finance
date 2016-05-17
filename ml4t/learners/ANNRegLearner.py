@@ -3,11 +3,14 @@ A simple wrapper for linear regression.  (c) 2015 Tucker Balch
 """
 
 import numpy as np
+from FFNeuralNet import *
 
-class LinRegLearner(object):
+class ANNRegLearner(object):
 
-    def __init__(self, verbose = False):
-		self.name = "Linear Regression Learner"
+    def __init__(self, sizes, cost=QuadraticCost, verbose = False):
+        self.name = "Neural net Regression Learner"
+        self.network = Network(sizes,
+                               cost=QuadraticCost)
         # pass # move along, these aren't the drones you're looking for
 
     def addEvidence(self,dataX,dataY):
@@ -16,13 +19,12 @@ class LinRegLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-
-        # slap on 1s column so linear regression finds a constant term
-        newdataX = np.ones([dataX.shape[0],dataX.shape[1]+1])
-        newdataX[:,0:dataX.shape[1]]=dataX
-
-        # build and save the model
-        self.model_coefs, residuals, rank, s = np.linalg.lstsq(newdataX, dataY)
+        training_data=np.column_stack((dataX,dataY))
+        (self.network).SGD(training_data,
+                           epochs=10,
+                           mini_batch_size=3,
+                           eta=0.01,
+                           lmbda = 0.0)
         
     def query(self,points):
         """
@@ -30,8 +32,7 @@ class LinRegLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        if len(self.model_coefs)<3:print self.model_coefs
-        return (self.model_coefs[:-1] * points).sum(axis = 1) + self.model_coefs[-1]
+        return self.network.feedforward(points)
 
 if __name__=="__main__":
     print "the secret clue is 'zzyzx'"

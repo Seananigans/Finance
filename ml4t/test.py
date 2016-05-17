@@ -9,7 +9,7 @@ import pandas as pd
 from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
-from learners import ANNRegLearner as net
+from learners import NeuralRegLearner as net
 
 def mean_normalization(trainX, testX):
     trnX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
@@ -64,32 +64,11 @@ if __name__=="__main__":
 	trainY = df.ix[:train_rows,-1]
 	testX = df.ix[train_rows:,0:-1]
 	testY = df.ix[train_rows:,-1]
-
-	print testX.shape
-	print testY.shape
-	print "Average Training Return: {}".format(round( trainY.mean(),3 ))
-	print "Average Training Return: {}".format(round( testY.mean(),3 ))
-	err = np.zeros(testY.shape)
-	for i in range(err.shape[0]):
-            err[i] = trainY.mean()
-	print "RMSE of Train Average on Test Set: {}".format(
-            math.sqrt(((testY - err) ** 2).sum()/testY.shape[0])
-            )
-	err[0] += 0.00000001
-	
-	for i in range(trainX.shape[1]):
-            print np.corrcoef(trainX.ix[:,i], trainY)[0][1]
-# 	plot_histogram(trainY)
 	
 	trainX, testX = mean_normalization(trainX, testX)
 	
 	# create a learner and train it
-	learners = [bag.BagLearner(learner = lrl.LinRegLearner,# knn.KNNLearner, #create a BagLearner
-                                   kwargs = {},#{"k":3}, #
-                                   bags = i,
-                                   boost = True,
-                                   verbose = False) for i in range(5,100,5)]
-	learners = [net.ANNRegLearner([trainX.shape[1],100,1])]
+	learners = [ net.NeuralRegLearner() ]
     
 	cors, rmsestrain, rmsestest = [], [], []
 	for i, learner in enumerate(learners):

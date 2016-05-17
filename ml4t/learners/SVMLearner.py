@@ -8,7 +8,7 @@ from sklearn.svm import SVR
 class SVMLearner(object):
 
     def __init__(self, verbose = False):
-		self.name = "Linear Regression Learner"
+		self.name = "Linear Support Vector Machine Learner"
         # pass # move along, these aren't the drones you're looking for
 
     def addEvidence(self,dataX,dataY):

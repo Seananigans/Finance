@@ -1,6 +1,8 @@
 """
-A simple wrapper for linear regression.  (c) 2015 Tucker Balch
+A wrapper for neural network regression. 
 """
+print "Not currently in production. Sorry"
+exit()
 
 import numpy as np
 from FFNeuralNet import *
@@ -19,8 +21,8 @@ class ANNRegLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-        training_data=np.column_stack((dataX,dataY))
-        (self.network).SGD(training_data,
+        training_data=zip(dataX,dataY)
+        self.network.SGD(training_data,
                            epochs=10,
                            mini_batch_size=3,
                            eta=0.01,

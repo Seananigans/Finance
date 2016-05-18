@@ -10,7 +10,7 @@ class Linear(object):
 	@staticmethod
 	def prime(x):
 		"""Return the derivative of the linear activation unit."""
-		pass
+		return 1
 
 class Sigmoid(object):
 	@staticmethod
@@ -44,14 +44,16 @@ class QuadraticCost(object):
 		return 0.5*np.linalg.norm(a-y)**2
 	
 	@staticmethod
-	def delta(a, y, activation=Linear.fn):
+	def delta(a, y, activation=Linear.prime):
 		""" """
 		return (a-y)*activation(z)
+		(a-y)*activation.prime(z)
 	
 class Network(object):
-	def __init__(self, sizes, activations=None):
+	def __init__(self, sizes, cost=QuadraticCost, activations=None):
 		self.weights = [np.random.randn(x, y)/np.sqrt(y) for x,y in zip(sizes[:-1], sizes[1:])]
 		self.biases = [np.random.randn(1, y) for y in sizes[1:]]
+		self.cost = cost
 		if activations==None:
 			self.activations = [Linear.fn for i in sizes[1:]]
 		elif not len(activations) == len(sizes[1:]):
@@ -59,12 +61,32 @@ class Network(object):
 			exit()
 	
 	def forward(self, a):
-		i=0
 		for act, w, b  in zip(self.activations, self.weights, self.biases):
 			a = act( np.dot(a, w) + b )
-			i+=1
 		return a
 		
+	def backprop(self, x, y):
+		n_w = [np.zeros(w.shape) for w in self.weights]
+		n_b = [np.zeros(b.shape) for b in self.biases]
+		
+		# Feed-Forward Pass
+		z_s = []
+		a_s = [x]
+		a = x
+		for w, b, act in zip(self.weights, self.biases, self.activations):
+			z = np.dot(a, w) + b
+			z_s.append(z)
+			a = act(z)
+			a_s.append(a)
+			
+		# Feed-Backward Pass
+		delta = (self.cost).delta(zs[-1], activations[-1], y)
+		n_b[-1] = delta
+        n_w[-1] = np.dot(delta, a_s[-2].transpose())
+		pass
+	
+	def sgd(self):
+		pass
 	
 
 

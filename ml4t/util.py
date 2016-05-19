@@ -147,7 +147,7 @@ def test_create_training_data():
 	symbol = 'IBM'
 	
 	create_training_data(symbol, start_date, end_date,
-							use_prices=False, num_lag=5)
+							use_prices=True, num_lag=5)
 
 if __name__ == "__main__":
 	test_create_training_data()

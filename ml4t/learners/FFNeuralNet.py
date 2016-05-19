@@ -46,7 +46,7 @@ class Sigmoid(object):
 
     @staticmethod
     def prime(z):
-        return fn(z)*(1-fn(z))
+        return Sigmoid.fn(z)*(1-Sigmoid.fn(z))
 
 class Network(object):
 

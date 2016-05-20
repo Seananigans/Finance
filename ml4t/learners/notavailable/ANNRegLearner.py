@@ -1,16 +1,18 @@
-##"""
-##A wrapper for neural network regression. 
-##"""
-##print "Not currently in production. Sorry"
-##exit()
+"""
+A wrapper for neural network regression. 
+"""
+print "Not currently in production. Sorry"
+exit()
 
 import numpy as np
-from NeuralNetwork2 import *
+from FFNeuralNet import *
 
 class ANNRegLearner(object):
 
-    def __init__(self, sizes=[], verbose = False):
+    def __init__(self, sizes, cost=QuadraticCost, verbose = False):
         self.name = "Neural net Regression Learner"
+        self.network = Network(sizes,
+                               cost=QuadraticCost)
         # pass # move along, these aren't the drones you're looking for
 
     def addEvidence(self,dataX,dataY):
@@ -19,14 +21,12 @@ class ANNRegLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-        
-        self.network = NeuralNetwork(inputLayer=dataX.shape[1],
-                                     outputLayer=1,
-                                     hiddenLayer=100)
-##        training_data=zip(dataX,np.array(dataY))
-        self.network.gradDescent(800000,
-                                 dataX,
-                                 dataY.values.reshape((dataX.shape[0],1)))
+        training_data=zip(dataX,dataY)
+        self.network.SGD(training_data,
+                           epochs=10,
+                           mini_batch_size=3,
+                           eta=0.01,
+                           lmbda = 0.0)
         
     def query(self,points):
         """
@@ -34,8 +34,7 @@ class ANNRegLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        points = points.values
-        return self.network.forward(points)
+        return self.network.feedforward(points)
 
 if __name__=="__main__":
     print "the secret clue is 'zzyzx'"

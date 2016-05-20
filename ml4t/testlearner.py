@@ -9,7 +9,7 @@ import pandas as pd
 from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
-from learners import SVMLearner as svm
+##from learners import SVMLearner as svm
 
 def mean_normalization(trainX, testX):
 	"""Returns the features normalized by the mean and standard deviation of
@@ -125,26 +125,21 @@ if __name__=="__main__":
 		predYtrain = learner.query(trainX) # get the predictions
 		print predYtrain.shape
 		rmse = math.sqrt(((trainY - predYtrain) ** 2).sum()/trainY.shape[0])
-		mape = (np.abs((trainY-predYtrain))/trainY).mean()
-		print mape
 		print
 		print "In sample results"
 		print "RMSE: ", rmse
 		c = np.corrcoef(predYtrain, y=trainY)
 		print "corr: ", c[0,1]
-		print "MAPE: :", mape
 		rmsestrain.append(rmse)
 
 		# evaluate out of sample
 		predY = learner.query(testX) # get the predictions
 		rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
-		mape = (np.abs((testY-predY))/testY).mean()
 		print
 		print "Out of sample results"
 		print "RMSE: ", rmse
 		c = np.corrcoef(predY, y=testY)
 		print "corr: ", c[0,1]
-		print "MAPE: :", mape
 		print
 		cors.append(c[0,1])
 		rmsestest.append(rmse)

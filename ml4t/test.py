@@ -9,7 +9,8 @@ import pandas as pd
 from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
-from learners import NeuralRegLearner as net
+##from learners import NeuralRegLearner as net
+from learners import ANNRegLearner as net
 
 def mean_normalization(trainX, testX):
     trnX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
@@ -68,7 +69,7 @@ if __name__=="__main__":
 	trainX, testX = mean_normalization(trainX, testX)
 	
 	# create a learner and train it
-	learners = [ net.NeuralRegLearner() ]
+	learners = [ net.ANNRegLearner() ]
     
 	cors, rmsestrain, rmsestest = [], [], []
 	for i, learner in enumerate(learners):
@@ -77,21 +78,23 @@ if __name__=="__main__":
 
 		# evaluate in sample
 		predYtrain = learner.query(trainX) # get the predictions
-		rmse = math.sqrt(((trainY - predYtrain) ** 2).sum()/trainY.shape[0])
+		rmse = math.sqrt(((trainY.values - predYtrain) ** 2).sum()/trainY.shape[0])
 		print
 		print "In sample results"
 		print "RMSE: ", rmse
-		c = np.corrcoef(predYtrain, y=trainY)
+		predYtrain = predYtrain.reshape(trainY.values.shape)
+		c = np.corrcoef(predYtrain, y=trainY.values)
 		print "corr: ", c[0,1]
 		rmsestrain.append(rmse)
 
 		# evaluate out of sample
 		predY = learner.query(testX) # get the predictions
-		rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
+		rmse = math.sqrt(((testY.values - predY) ** 2).sum()/testY.shape[0])
 		print
 		print "Out of sample results"
 		print "RMSE: ", rmse
-		c = np.corrcoef(predY, y=testY)
+		predY = predY.reshape(testY.values.shape)
+		c = np.corrcoef(predY, y=testY.values)
 		print "corr: ", c[0,1]
 		print
 		cors.append(c[0,1])

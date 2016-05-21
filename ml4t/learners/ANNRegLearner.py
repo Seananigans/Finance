@@ -5,7 +5,7 @@
 ##exit()
 
 import numpy as np
-from NeuralNetwork2 import *
+from NeuralNet import *
 
 class ANNRegLearner(object):
 
@@ -19,14 +19,13 @@ class ANNRegLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-        
-        self.network = NeuralNetwork(inputLayer=dataX.shape[1],
-                                     outputLayer=1,
-                                     hiddenLayer=100)
-##        training_data=zip(dataX,np.array(dataY))
-        self.network.gradDescent(800000,
-                                 dataX,
-                                 dataY.values.reshape((dataX.shape[0],1)))
+        dataX = dataX[:,5:]
+        feature_size = dataX.shape[1]
+        dataY =  dataY.reshape(dataY.shape[0], 1)
+        output_size = dataY.shape[1]
+        self.min_y = dataY.min()
+        self.network = Network(sizes = [feature_size, 20, 10, output_size], activations=[ReLU, ReLU, ReLU])
+        self.network.sgd(dataX, dataY)
         
     def query(self,points):
         """
@@ -35,6 +34,7 @@ class ANNRegLearner(object):
         @returns the estimated values according to the saved model.
         """
         points = points.values
+        points = points[:,5:]
         return self.network.forward(points)
 
 if __name__=="__main__":

@@ -164,6 +164,9 @@ class Network(object):
                         running_cost.append(new_cost)
                         # Assess reset criteria
                         if new_cost > 2*init_cost: self.initialize_weights()
+#                         if iteration > 1000  and \
+# 						(self.costs[len(self.costs)-1]>self.costs[len(self.costs)-1000]):
+# 							break
                         
 
         def adjust_eta(self, eta, old_costs, new_cost):
@@ -189,6 +192,27 @@ class Network(object):
                 f = open(filename, "w")
                 json.dump(data, f)
                 f.close()
+    
+#     def clear(self):
+#         if os.name == 'nt':
+#             os.system('cls')
+#         else:
+#             os.system('clear')
+# 
+#     def draw(self, cost):
+#         self.clear()
+#         print "The current error is {}".format(cost[0])
+#         
+#     def display_error(self):
+#         '''#Inform the user of the current error as iterations increase.'''
+#         #self.draw(self.costs[len(self.costs)-1])
+#         sys.stdout.write(
+#             "ERROR LEVEL: {0:.5g}\r".format(
+#                 self.costs[len(self.costs)-1]
+#                                              )
+#             )
+#         sys.stdout.flush()
+#         self.hidden_history.append(self.a2)
 
 #### Loading a Network
 def load(filename):
@@ -205,40 +229,40 @@ def load(filename):
         net.biases = [np.array(b) for b in data["biases"]]
         return net
 
-
-trainX=np.array(
-        [[0.],
-         [1.],
-         [2.],
-         [3.],
-         [4.]]
-        )
-
-trainY=np.array(
-        [[0., 0., 0.],
-         [1., 2., 3.],
-         [4., 4., 6.],
-         [9., 6., 9.],
-         [16., 8., 12.]]
-        )
-
-trainY=np.array(
-        [[1., 0., 0.],
-         [0., 1., 0.],
-         [1., 0., 0.],
-         [0., 1., 0.],
-         [1., 0., 0.]]
-        )
-acts = [ReLU,ReLU]
-
-feature_size = trainX.shape[1]
-output_size = trainY.shape[1]
-net = Network([feature_size,
-               100,
-               output_size],cost=CrossEntropyCost,
-              activations=acts)
-print net.forward(trainX)
-bs, ws = net.backprop(trainX, trainY)
-net.sgd(trainX, trainY, iterations=100000)
-print np.round(net.forward(trainX))
+# 
+# trainX=np.array(
+#         [[0.],
+#          [1.],
+#          [2.],
+#          [3.],
+#          [4.]]
+#         )
+# 
+# trainY=np.array(
+#         [[0., 0., 0.],
+#          [1., 2., 3.],
+#          [4., 4., 6.],
+#          [9., 6., 9.],
+#          [16., 8., 12.]]
+#         )
+# 
+# trainY=np.array(
+#         [[1., 0., 0.],
+#          [0., 1., 0.],
+#          [1., 0., 0.],
+#          [0., 1., 0.],
+#          [1., 0., 0.]]
+#         )
+# acts = [ReLU,ReLU]
+# 
+# feature_size = trainX.shape[1]
+# output_size = trainY.shape[1]
+# net = Network([feature_size,
+#                100,
+#                output_size],cost=CrossEntropyCost,
+#               activations=acts)
+# print net.forward(trainX)
+# bs, ws = net.backprop(trainX, trainY)
+# net.sgd(trainX, trainY, iterations=100000)
+# print np.round(net.forward(trainX))
 

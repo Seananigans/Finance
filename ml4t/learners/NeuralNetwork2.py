@@ -125,8 +125,6 @@ Refer to Octave construction for proper implementation.'''
             self.v_B2 = mu*self.v_B2 - self.alpha*gradients[3]
             self.W1 = (1-self.alpha)*self.W1 + self.v_W1
             self.W2 = (1-self.alpha)*self.W2 + self.v_W2
-            self.v_B1 = self.v_B1
-            self.v_B2 = self.v_B2
             self.B1 = (1-self.alpha)*self.B1 + self.v_B1
             self.B2 = (1-self.alpha)*self.B2 + self.v_B2
             #Add gradients to theta

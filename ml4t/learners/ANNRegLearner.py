@@ -13,19 +13,29 @@ class ANNRegLearner(object):
         self.name = "Neural net Regression Learner"
         # pass # move along, these aren't the drones you're looking for
 
-    def addEvidence(self,dataX,dataY):
+    def addEvidence(self,dataX,dataY, use_trained=True):
         """
         @summary: Add training data to learner
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-        dataX = dataX[:,5:]
+        dataX = dataX[:,6:]
         feature_size = dataX.shape[1]
         dataY =  dataY.reshape(dataY.shape[0], 1)
         output_size = dataY.shape[1]
-        self.min_y = dataY.min()
-        self.network = Network(sizes = [feature_size, 20, 10, output_size], activations=[ReLU, ReLU, ReLU])
-        self.network.sgd(dataX, dataY)
+        
+        filename = "stocknet.txt"
+        if use_trained:
+            try:
+               self.network = load(filename)
+            except IOError:
+               self.network = Network(sizes = [feature_size, 20, 10, output_size], 
+               									activations=[ReLU, ReLU, ReLU])
+        else:
+            self.network = Network(sizes = [feature_size, 20, 10, output_size], 
+            								activations=[Tanh, Tanh, Tanh])
+        self.network.sgd(dataX, dataY, lmbda=0.0)
+        self.network.save(filename)
         
     def query(self,points):
         """
@@ -34,7 +44,7 @@ class ANNRegLearner(object):
         @returns the estimated values according to the saved model.
         """
         points = points.values
-        points = points[:,5:]
+        points = points[:,6:]
         return self.network.forward(points)
 
 if __name__=="__main__":

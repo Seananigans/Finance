@@ -74,7 +74,7 @@ if __name__=="__main__":
 	cors, rmsestrain, rmsestest = [], [], []
 	for i, learner in enumerate(learners):
 		print learner.name
-		learner.addEvidence(trainX.values, trainY) # train it
+		learner.addEvidence(trainX.values, trainY, use_trained=True) # train it
 
 		# evaluate in sample
 		predYtrain = learner.query(trainX) # get the predictions

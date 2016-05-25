@@ -108,11 +108,12 @@ if __name__=="__main__":
 #							   bags = 10, 
 #							   boost = True, 
 #							   verbose = False)]
+	opt_var = range(5,100,5)
 	learners = [bag.BagLearner(learner = lrl.LinRegLearner,# knn.KNNLearner, #create a BagLearner
 								   kwargs = {},#{"k":3}, #
 								   bags = i,
 								   boost = True,
-								   verbose = False) for i in range(5,100,5)]
+								   verbose = False) for i in opt_var]
 	
 	# Collect scoring metrics for each learner for later comparison
 	cors, rmsestrain, rmsestest = [], [], []
@@ -172,6 +173,7 @@ if __name__=="__main__":
 	
 	if len(learners)>4:
 		plt.plot(range(len(cors)), cors)
+		plt.xticks(range(len(cors)),opt_var)
 		plt.ylabel("Correlation")
 		plt.xlabel("Model Complexity")
 		plt.show()
@@ -183,4 +185,5 @@ if __name__=="__main__":
 	plt.legend([testerr,trainerr], ["Test Error", "Train Error"])
 	plt.xlabel("Model Complexity")
 	plt.ylabel("RMSE")
+	plt.xticks(range(len(cors)),opt_var)
 	plt.show()

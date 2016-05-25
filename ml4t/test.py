@@ -1,5 +1,5 @@
 """
-Test a learner.  (c) 2015 Tucker Balch
+Test for neural net learners.
 """
 
 import numpy as np
@@ -50,7 +50,7 @@ if __name__=="__main__":
 	filename= "simData/example.csv"
 	
 	df = pd.read_csv(filename, index_col='Date',
-					parse_dates=True, na_values=['nan'])
+					parse_dates=False, na_values=['nan'])
 					
 	data = df.values
 	cols = [col for col in df.columns if not col.startswith("Returns")]
@@ -68,13 +68,16 @@ if __name__=="__main__":
 	
 	trainX, testX = mean_normalization(trainX, testX)
 	
-	# create a learner and train it
-	learners = [ net.ANNRegLearner() ]
+	# create learners list and train them
+	opt_var =  [10**j for j in range(-3,4)]
+	learners = [ net.ANNRegLearner(lmbda=i) for i in opt_var]
     
 	cors, rmsestrain, rmsestest = [], [], []
+	best_cor = 0
+	best_rmse = np.inf
 	for i, learner in enumerate(learners):
 		print learner.name
-		learner.addEvidence(trainX.values, trainY, use_trained=True) # train it
+		learner.addEvidence(trainX.values, trainY, use_trained=False) # train it
 
 		# evaluate in sample
 		predYtrain = learner.query(trainX) # get the predictions
@@ -97,6 +100,10 @@ if __name__=="__main__":
 		c = np.corrcoef(predY, y=testY.values)
 		print "corr: ", c[0,1]
 		print
+		if c[0,1]>best_cor and rmse<best_rmse:
+			learner.network.save("network_models/{}stocknet.txt".format("COMPANY_NAME"))
+			best_cor = c[0,1]
+			best_rmse = rmse
 		cors.append(c[0,1])
 		rmsestest.append(rmse)
 		predicted = pd.DataFrame(predY,
@@ -104,11 +111,12 @@ if __name__=="__main__":
                                          index=df.ix[train_rows:,:].index)
 		predicted = predicted.join(testY)
 		
-		if i%5==0:
+		if i%2==0:
 			plt.figure(1)
 			plt.subplot(211)
-			pre, = plt.plot(predicted[['Predicted']])
-			act, = plt.plot(predicted[outcome])
+			pre, = plt.plot(predicted[['Predicted']].values)
+			act, = plt.plot(predicted[outcome].values)
+			plt.xticks(range(0,predicted.shape[0],50),predicted.index)
 			plt.legend([pre, act], ["Predicted", "Actual"])
 			plt.xlabel("Date")
 			plt.ylabel("Returns")
@@ -123,17 +131,18 @@ if __name__=="__main__":
 		df1 = df1.join(predicted)
 		df1.to_csv("test.csv", index_label="Date")
 	
-	if len(learners)>4:
+	if len(learners)>2:
 		plt.plot(range(len(cors)), cors)
 		plt.ylabel("Correlation")
 		plt.xlabel("Model Complexity")
+		plt.xticks(range(len(cors)),opt_var)
 		plt.show()
-	
-	# Plot testing & training error on the same plot to 
-	# show how error behaves with different models.
-	testerr, = plt.plot(range(len(cors)), rmsestest, label="Test Error")
-	trainerr, = plt.plot(range(len(cors)), rmsestrain, label="Training Error")
-	plt.legend([testerr,trainerr], ["Test Error", "Train Error"])
-	plt.xlabel("Model Complexity")
-	plt.ylabel("RMSE")
-	plt.show()
+		# Plot testing & training error on the same plot to 
+		# show how error behaves with different models.
+		testerr, = plt.plot(range(len(cors)), rmsestest, label="Test Error")
+		trainerr, = plt.plot(range(len(cors)), rmsestrain, label="Training Error")
+		plt.legend([testerr,trainerr], ["Test Error", "Train Error"])
+		plt.xlabel("Model Complexity")
+		plt.ylabel("RMSE")
+		plt.xticks(range(len(cors)),opt_var)
+		plt.show()

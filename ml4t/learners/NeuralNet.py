@@ -33,12 +33,10 @@ class Sigmoid(object):
 		return Sigmoid.fn(x)*(1.-Sigmoid.fn(x))
 	
 class Tanh(object):
-	@staticmethod
-	def fn(x):
-		"""Return the hyperbolic tangent activation unit."""
-		pos = np.nan_to_num( np.exp(x) )
-		neg = np.nan_to_num( np.exp(-x) )
-		return (pos-neg)/(pos+neg)
+    @staticmethod
+    def fn(x):
+        """Return the hyperbolic tangent activation unit."""
+        return 2.0*Sigmoid.fn(2.0*x) - 1.0
 	
 	@staticmethod
 	def prime(x):
@@ -60,6 +58,7 @@ class Softmax(object):
 	@staticmethod
 	def fn(x):
 		"""Return the softmax activation unit."""
+		x -= x.max()
 		exp_x = np.nan_to_num(np.exp(x))
 		return exp_x/np.sum(exp_x, axis=1, keepdims=True)
 	
@@ -81,19 +80,20 @@ class QuadraticCost(object):
 		return (a-y)*activation.prime(z)
 
 class CrossEntropyCost(object):
-	"""Cross-Entropy Cost function and delta for output layer."""
-	@staticmethod
-	def fn(a, y):
-		return np.sum( np.nan_to_num( -y*np.log(a)-(1-y)*np.log(1-a) ) )
+    """Cross-Entropy Cost function and delta for output layer."""
+    @staticmethod
+    def fn(a, y):
+        return np.sum( -y*np.nan_to_num(np.log(a)) - (1-y)*np.nan_to_num(np.log(1-a)) )
 
-	@staticmethod
-	def delta(z, a, y, activation=Linear):
-		return (a-y)
+    @staticmethod
+    def delta(z, a, y, activation=Linear):
+        return (a-y)
 
 class Network(object):
-	def __init__(self, sizes, cost=QuadraticCost, activations=None, lmbda=0.0):
+	def __init__(self, sizes, cost=QuadraticCost, activations=None, lmbda=0.0, dropout=0.0):
 		self.cost = cost
 		self.lmbda = lmbda
+		self.dropout = dropout
 		self.sizes = sizes
 		self.num_layers= len(sizes)
 		self.initialize_weights()
@@ -114,12 +114,14 @@ class Network(object):
 		for act, w, b  in zip(self.activations, self.weights, self.biases):
 			z = np.dot(a, w) + b
 			a = act.fn( z )
+			if self.dropout>0.0:
+				a = np.maximum(0, a)
 		return a
 		
 	def backprop(self, x, y):
 		n_w = [np.zeros(w.shape) for w in self.weights]
 		n_b = [np.zeros(b.shape) for b in self.biases]
-		p = 0.5
+		p = self.dropout
 		n_smpl = float(x.shape[0])
 		# Feed-Forward Pass
 		z_s = []
@@ -127,15 +129,16 @@ class Network(object):
 		a = x
 		for w, b, act in zip(self.weights, self.biases, self.activations):
 			z = np.dot(a, w) + b
-			u = (np.random.rand(*w.shape) < p) / p
 			z_s.append(z)
 			a = act.fn(z)
+			if p>0.0:
+				u = (np.random.rand(*a.shape) < p ) / p
+				a *= u
 			a_s.append(a)
 		
 		# Feed-Backward Pass
 		delta = (self.cost).delta(z_s[-1], a_s[-1], y, self.activations[-1])
-		n_b[-1] = delta.mean(axis=0)
-		n_b[-1] = n_b[-1].reshape(1, delta.shape[1])
+		n_b[-1] = delta.mean(axis=0, keepdims=True)
 		n_w[-1] = np.dot(a_s[-2].transpose(), delta) 
 		## Regularization
 		n_w[-1] += self.lmbda*self.weights[-1]
@@ -143,46 +146,46 @@ class Network(object):
 				z = z_s[-l]
 				sp = self.activations[-l].prime(z)
 				delta = np.dot(delta, self.weights[-l+1].transpose()) * sp
-				n_b[-l] = delta.mean(axis=0)
-				n_b[-l] = n_b[-l].reshape(1, delta.shape[1])
+				n_b[-l] = delta.mean(axis=0, keepdims=True)
 				a = np.array(a_s[-l-1])
 				n_w[-l] = np.dot(a.transpose(), delta)
 				## Regularization
 				n_w[-l] += (self.lmbda)*self.weights[-l]
 		return (n_b, n_w)
 	
-	def sgd(self, trainX, trainY, iterations=10000, mu=0.9):
+	def sgd(self, trainX, trainY, iterations=10000, mu=0.9, eta = 1e-4):
 		# Preparing for stochasticity
 		n_smpl = float(trainX.shape[0])
 		# Learning rate and items for adjustment criteria
-		eta = 0.00001
 		old_costs = []
 		# Items for stopping criteria
 		running_cost = []
 		# for reset criteria
 		## calculate initial cost (should only get better from here)
 		l2_norm_squared = sum([(w**2).sum() for w in self.weights])
-		init_cost = QuadraticCost.fn(self.forward(trainX), trainY)
+		init_cost = self.cost.fn(self.forward(trainX), trainY)
 		init_cost += 0.5*self.lmbda/n_smpl*l2_norm_squared
 		best_cost = init_cost
+		best_weights = [w for w in self.weights]
+		best_biases = [b for b in self.biases]
 		## set malfunctions equal to 0
 		something_wrong = 0
 		# Nesterov Momentum 1: Initiate previous weight and bias derivatives
 		v_weights = [np.zeros(w.shape) for w in self.weights]
 		v_biases = [np.zeros(b.shape) for b in self.biases]
-		# Adagrad Initiation
+		# RMSProp 0: Initiation
 		cache = [np.zeros(w.shape) for w in self.weights]
 		eps = 1e-6
 		decay_rate = 0.99
 		for _ in range(iterations):
 			# Retrieve derivatives for current weights and biases
 			nabla_b, nabla_w = self.backprop(trainX, trainY)
-			# Adagrad
+			# RMSProp 1: collecting gradients
 			cache = [decay_rate*cac + (1-decay_rate)*nw**2 for cac, nw in zip(cache, nabla_w)]
 			# Nesterov Momentum 2: Store previous values of velocity update
 			v_prev_weights = [vw for vw in v_weights]
 			v_prev_biases = [vb for vb in v_biases]
-			# Nesterov Momentum 3: Retrieve velocity update
+			# Nesterov Momentum 3 and RMSProp 2: Retrieve velocity update
 			v_weights = [mu*vw - eta*nw/(np.sqrt(cac) + eps) for vw, nw, cac in zip(v_weights, nabla_w, cache)]
 			v_biases = [mu*vb - eta*nb for vb, nb in zip(v_biases, nabla_b)]
 			# Nesterov Momentum: Store the lookahead value as the weights and biases
@@ -192,7 +195,7 @@ class Network(object):
 							for b, vpb, vb in zip(self.biases, v_prev_biases, v_biases)]
 			
 			l2_norm_squared = sum([(w**2).sum() for w in self.weights])
-			new_cost = QuadraticCost.fn(self.forward(trainX), trainY)
+			new_cost = self.cost.fn(self.forward(trainX), trainY)
 			new_cost += 0.5*self.lmbda/2/n_smpl*l2_norm_squared
 			
 			# adjust learning rate (eta)
@@ -215,7 +218,7 @@ class Network(object):
 			running_cost.append(new_cost)
 			
 			# Assess reset criteria
-			if new_cost > 2*init_cost or eta>1e2:
+			if new_cost > 2*init_cost or eta>1e2 or new_cost==np.inf:
 				self.initialize_weights()
 				eta = 1e-5
 			
@@ -232,6 +235,7 @@ class Network(object):
 					self.weights = [w for w in best_weights]
 					self.biases = [b for b in best_biases]
 					something_wrong=0
+				
 						
 
 	def adjust_eta(self, eta, old_costs, new_cost):
@@ -243,25 +247,26 @@ class Network(object):
 			return eta*0.5 + 1e-9
 		else:
 			if len_reached: old_costs.pop(0)
-			return eta*1.001
+			return eta*1.01
 
 	def save(self, filename):
 				"""Save the neural network to the file ``filename``."""
 				data = {"sizes": self.sizes,
-						"weights": [w.tolist() for w in self.weights],
-						"biases": [b.tolist() for b in self.biases],
 						"lmbda": self.lmbda,
+						"dropout": self.dropout,
 						"cost": str(self.cost.__name__),
-						"activations": [str(act.__name__) for act in self.activations]}
+						"activations": [str(act.__name__) for act in self.activations],
+						"weights": [w.tolist() for w in self.weights],
+						"biases": [b.tolist() for b in self.biases]}
 				f = open(filename, "w")
 				json.dump(data, f)
 				f.close()
 
 	def display_error(self, iter, cost):
 		'''#Inform the user of the current error as iterations increase.'''
-		sys.stdout.write("\033[K") #clear line
-		print "\rTraining Error at iter {0:}: {1:.5g}".format(iter, cost)
+		print "Training Error at iter {0:}: {1:.5g}\r".format(iter, cost)
 		sys.stdout.write("\033[F") #back to previous line
+		sys.stdout.write("\033[K") #clear line
 
 #### Loading a Network
 def load(filename):
@@ -277,45 +282,53 @@ def load(filename):
 					sizes = data["sizes"], 
 					cost = cost, 
 					activations = activations,
-					lmbda = data["lmbda"])
+					lmbda = data["lmbda"],
+					dropout = data["dropout"])
 		net.weights = [np.array(w) for w in data["weights"]]
 		net.biases = [np.array(b) for b in data["biases"]]
 		return net
 
  
-# trainX=np.array(
-#  [[0.],
-#   [1.],
-#   [2.],
-#   [3.],
-#   [4.]]
-#  )
-# 
-# trainY=np.array(
-#  [[0., 0., 0.],
-#   [1., 2., 3.],
-#   [4., 4., 6.],
-#   [9., 6., 9.],
-#   [16., 8., 12.]]
-#  )
-# 
-# trainY=np.array(
-#  [[1., 0., 0.],
-#   [0., 1., 0.],
-#   [1., 0., 0.],
-#   [0., 1., 0.],
-#   [1., 0., 0.]]
-#  )
-# acts = [ReLU,Softmax]
-# 
-# feature_size = trainX.shape[1]
-# output_size = trainY.shape[1]
-# net = Network([feature_size,
-#         100,
-#         output_size],cost=CrossEntropyCost,
-#        activations=acts,
-#        lmbda=0.25)
-# print net.forward(trainX)
-# net.sgd(trainX, trainY, iterations=100000)
-# print np.round(net.forward(trainX))
+trainX=np.array(
+ [[0.],
+  [1.],
+  [2.],
+  [3.],
+  [4.]]
+ )
+
+trainY=np.array(
+ [[0., 0., 0.],
+  [1., 2., 3.],
+  [4., 4., 6.],
+  [9., 6., 9.],
+  [16., 8., 12.]]
+ )
+
+trainY=np.array(
+ [[1., 0., 0.],
+  [0., 1., 0.],
+  [1., 0., 0.],
+  [0., 1., 0.],
+  [1., 0., 0.]]
+ )
+acts = [ReLU, Softmax]
+
+feature_size = trainX.shape[1]
+output_size = trainY.shape[1]
+net = Network([feature_size,
+        1000,
+        output_size],
+        cost=CrossEntropyCost,
+        dropout=0.50,
+       activations=acts)
+print net.forward(trainX)
+net.sgd(trainX, trainY, iterations=10000)
+if acts[-1]!=Softmax:
+	print np.round(net.forward(trainX))
+else:
+	pred = net.forward(trainX)
+	mx = pred.max(axis=1, keepdims=True)*np.ones(pred.shape)
+	print pred
+	print ( mx==pred )* 1.
 

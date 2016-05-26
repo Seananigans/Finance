@@ -50,6 +50,7 @@ def create_training_data(symbol, start_date, end_date,
 						 use_web = False, #Use the web to gether Adjusted Close data?
 						 use_vol = False, #Use the volume of stocks traded that day?
 						 use_prices = False, #Use future Adj. Close as opposed to future returns
+						 direction = False, #Use the direction of the market returns as output
 						 indicators = ['Bollinger',
 									   'Momentum',
 									   'Volatility',
@@ -120,6 +121,9 @@ Create and store a training dataframe:
 		# Add output column ***(output should be returns, not prices)***
 		if not use_prices:
 			returns = adj_close[[symbol]].shift(-horizon)/adj_close[[symbol]] - 1
+			if direction:
+				returns[returns.values>0.0] = 1.0
+				returns[returns.values<=0.0] = -1.0
 		else:
 			returns = adj_close[[symbol]].shift(-horizon)
 		returns.columns = ["Returns_"+symbol]
@@ -146,8 +150,14 @@ def test_create_training_data():
 	end_date = dt.datetime(2006,1,1)
 	symbol = 'IBM'
 	
-	create_training_data(symbol, start_date, end_date,
-                             use_prices=False, num_lag=5)
+	create_training_data(
+						symbol, 
+						start_date, 
+						end_date,
+                        use_prices=True, 
+                        direction=True,
+                        num_lag=5
+                        )
 
 if __name__ == "__main__":
 	test_create_training_data()

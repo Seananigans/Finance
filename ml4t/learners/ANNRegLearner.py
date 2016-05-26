@@ -27,9 +27,8 @@ class ANNRegLearner(object):
         sizes = [feature_size, 50, 20, output_size]
         if dataY.mean()<5.0:
             cost = CrossEntropyCost
-            cost = QuadraticCost
             if dataY.min()==0.0 and dataY.max()==1.0:
-                activations = [ReLU for i in sizes[1:]]
+                activations = [Sigmoid for i in sizes[1:]]
             elif dataY.min()==-1.0 and dataY.max()==1.0:
                 activations = [Tanh for i in sizes[1:]]
             else:

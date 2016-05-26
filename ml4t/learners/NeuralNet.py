@@ -90,7 +90,7 @@ class CrossEntropyCost(object):
         return (a-y)
 
 class Network(object):
-	def __init__(self, sizes, cost=QuadraticCost, activations=None, lmbda=0.0, dropout=0.0):
+	def __init__(self, sizes, cost=QuadraticCost, activations=None, lmbda=0.0, dropout=1.0):
 		self.cost = cost
 		self.lmbda = lmbda
 		self.dropout = dropout
@@ -153,7 +153,7 @@ class Network(object):
 				n_w[-l] += (self.lmbda)*self.weights[-l]
 		return (n_b, n_w)
 	
-	def sgd(self, trainX, trainY, iterations=10000, mu=0.9, eta = 1e-4):
+	def sgd(self, trainX, trainY, iterations=10000, mu=0.9, eta = 1e-5):
 		# Preparing for stochasticity
 		n_smpl = float(trainX.shape[0])
 		# Learning rate and items for adjustment criteria
@@ -176,7 +176,7 @@ class Network(object):
 		# RMSProp 0: Initiation
 		cache = [np.zeros(w.shape) for w in self.weights]
 		eps = 1e-6
-		decay_rate = 0.99
+		decay_rate = 0.9
 		for _ in range(iterations):
 			# Retrieve derivatives for current weights and biases
 			nabla_b, nabla_w = self.backprop(trainX, trainY)
@@ -194,6 +194,7 @@ class Network(object):
 			self.biases = [b - mu*vpb + (1+mu)*vb 
 							for b, vpb, vb in zip(self.biases, v_prev_biases, v_biases)]
 			
+			
 			l2_norm_squared = sum([(w**2).sum() for w in self.weights])
 			new_cost = self.cost.fn(self.forward(trainX), trainY)
 			new_cost += 0.5*self.lmbda/2/n_smpl*l2_norm_squared
@@ -204,13 +205,13 @@ class Network(object):
 			
 			# Assess learning
 			if _%(iterations/20)==0:
-				self.display_error(_, new_cost)
+				self.display_error(_, new_cost, iterations)
 				
 			# Assess stopping criteria
 			if len(running_cost)>=100:
 				cost_stdev = np.std(running_cost)
 				cost_avg = np.mean(running_cost)
-				if cost_stdev<1e-6 and cost_avg>new_cost: 
+				if cost_stdev<1e-7 and cost_avg>new_cost: 
 					if new_cost>init_cost:
 						print "No good solution found"
 					break
@@ -244,7 +245,7 @@ class Network(object):
 			return eta
 		elif np.mean(old_costs)<=new_cost:
 			if len_reached: old_costs.pop(0)
-			return eta*0.5 + 1e-9
+			return eta*0.6 + 1e-9
 		else:
 			if len_reached: old_costs.pop(0)
 			return eta*1.01
@@ -262,9 +263,9 @@ class Network(object):
 				json.dump(data, f)
 				f.close()
 
-	def display_error(self, iter, cost):
+	def display_error(self, iter, cost, iterations):
 		'''#Inform the user of the current error as iterations increase.'''
-		print "Training Error at iter {0:}: {1:.5g}\r".format(iter, cost)
+		print "Training {0:.5g}% Complete: Error = {1:.5g}\r".format(iter*100.0/iterations, cost)
 		sys.stdout.write("\033[F") #back to previous line
 		sys.stdout.write("\033[K") #clear line
 
@@ -289,46 +290,49 @@ def load(filename):
 		return net
 
  
-trainX=np.array(
- [[0.],
-  [1.],
-  [2.],
-  [3.],
-  [4.]]
- )
-
-trainY=np.array(
- [[0., 0., 0.],
-  [1., 2., 3.],
-  [4., 4., 6.],
-  [9., 6., 9.],
-  [16., 8., 12.]]
- )
-
-trainY=np.array(
- [[1., 0., 0.],
-  [0., 1., 0.],
-  [1., 0., 0.],
-  [0., 1., 0.],
-  [1., 0., 0.]]
- )
-acts = [ReLU, Softmax]
-
-feature_size = trainX.shape[1]
-output_size = trainY.shape[1]
-net = Network([feature_size,
-        1000,
-        output_size],
-        cost=CrossEntropyCost,
-        dropout=0.50,
-       activations=acts)
-print net.forward(trainX)
-net.sgd(trainX, trainY, iterations=10000)
-if acts[-1]!=Softmax:
-	print np.round(net.forward(trainX))
-else:
-	pred = net.forward(trainX)
-	mx = pred.max(axis=1, keepdims=True)*np.ones(pred.shape)
-	print pred
-	print ( mx==pred )* 1.
+# trainX=np.array(
+#  [[0.],
+#   [1.],
+#   [2.],
+#   [3.],
+#   [4.]]
+#  )
+# 
+# trainY=np.array(
+#  [[0., 0., 0.],
+#   [1., 2., 3.],
+#   [4., 4., 6.],
+#   [9., 6., 9.],
+#   [16., 8., 12.]]
+#  )
+# 
+# trainY=np.array(
+#  [[1., 0., 0.],
+#   [0., 1., 0.],
+#   [1., 0., 0.],
+#   [0., 1., 0.],
+#   [1., 0., 0.]]
+#  )
+# acts = [ReLU, Softmax]
+# 
+# feature_size = trainX.shape[1]
+# output_size = trainY.shape[1]
+# # Create test network
+# net = Network([feature_size,
+#         1000,
+#         output_size],
+#         cost=CrossEntropyCost,
+#         dropout=1.,
+#        activations=acts)
+# # Learn from data
+# net.sgd(trainX, trainY, iterations=10000)
+# # Produce test output
+# pred = net.forward(trainX)
+# if acts[-1]!=Softmax:
+# 	print np.round(pred)
+# else:
+# 	mx = pred.max(axis=1, keepdims=True)*np.ones(pred.shape)
+# 	print np.round(pred,2)
+# 	print ( mx==pred )* 1.
+# print net.cost.fn(pred, trainY)
 

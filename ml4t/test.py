@@ -12,6 +12,11 @@ from learners import BagLearner as bag
 ##from learners import NeuralRegLearner as net
 from learners import ANNRegLearner as net
 
+def mean_subtraction(trainX, testX):
+    trnX = ( trainX - trainX.mean(axis=0) )
+    tstX = ( testX - trainX.mean(axis=0) )
+    return trnX, tstX
+    
 def mean_normalization(trainX, testX):
     trnX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
     tstX = ( testX - trainX.mean(axis=0) )/trainX.std(axis=0)
@@ -69,15 +74,20 @@ if __name__=="__main__":
 	trainX, testX = mean_normalization(trainX, testX)
 	
 	# create learners list and train them
-	opt_var =  [10**j for j in range(-3,4)]
-	learners = [ net.ANNRegLearner(lmbda=i) for i in opt_var]
+	opt_var =  [10**j for j in range(-4,3)]
+	learners = [ net.ANNRegLearner(lmbda=i, use_trained=True) for i in opt_var]
     
 	cors, rmsestrain, rmsestest = [], [], []
 	best_cor = 0
 	best_rmse = np.inf
+	
+	if testY.min()<=-0.99 or testY.min()<=0.01: 
+		no_cor = True
+	else: no_cor = False
+	
 	for i, learner in enumerate(learners):
 		print learner.name
-		learner.addEvidence(trainX.values, trainY, use_trained=False) # train it
+		learner.addEvidence(trainX.values, trainY) # train it
 
 		# evaluate in sample
 		predYtrain = learner.query(trainX) # get the predictions
@@ -86,8 +96,9 @@ if __name__=="__main__":
 		print "In sample results"
 		print "RMSE: ", rmse
 		predYtrain = predYtrain.reshape(trainY.values.shape)
-		c = np.corrcoef(predYtrain, y=trainY.values)
-		print "corr: ", c[0,1]
+		if not no_cor:
+			c = np.corrcoef(predYtrain, y=trainY.values)
+			print "corr: ", c[0,1]
 		rmsestrain.append(rmse)
 
 		# evaluate out of sample
@@ -96,22 +107,33 @@ if __name__=="__main__":
 		print
 		print "Out of sample results"
 		print "RMSE: ", rmse
+		if testY.min()==-1.0:
+			predY[predY>0]=1.0
+			predY[predY<=0]=-1.0
+		elif testY.min()==0.0:
+			predY[predY>0.5]=1.0
+			predY[predY<=0.5]=0.0
+		if no_cor:
+			accuracy = float((testY.values == predY).mean())
+			print "Accuracy: ", accuracy
 		predY = predY.reshape(testY.values.shape)
-		c = np.corrcoef(predY, y=testY.values)
-		print "corr: ", c[0,1]
+		if not no_cor:
+			c = np.corrcoef(predY, y=testY.values)
+			print "corr: ", c[0,1]
 		print
-		if c[0,1]>best_cor and rmse<best_rmse:
+		if not no_cor and c[0,1]>best_cor and rmse<best_rmse:
 			learner.network.save("network_models/{}stocknet.txt".format("COMPANY_NAME"))
 			best_cor = c[0,1]
 			best_rmse = rmse
-		cors.append(c[0,1])
+		if not no_cor: cors.append(c[0,1])
+		else: cors.append(accuracy)
 		rmsestest.append(rmse)
 		predicted = pd.DataFrame(predY,
                                          columns=["Predicted"],
                                          index=df.ix[train_rows:,:].index)
 		predicted = predicted.join(testY)
 		
-		if i%2==0:
+		if i%2==0 and testY.min() not in [-1., 0.]:
 			plt.figure(1)
 			plt.subplot(211)
 			pre, = plt.plot(predicted[['Predicted']].values)
@@ -121,7 +143,14 @@ if __name__=="__main__":
 			plt.xlabel("Date")
 			plt.ylabel("Returns")
 			plt.subplot(212)
+			# Correlation between predicted and actual
+# 			predY, testY = mean_subtraction(predY, testY)
 			plt.scatter(predY, testY)
+			plt.axvline(predY.mean(), color='r')
+			plt.axhline(testY.mean(), color='r')
+			plt.scatter([predY.mean()], [testY.mean()], color='r')
+			plt.plot([testY.min(), testY.max()],[testY.min(), testY.max()], color='g')
+# 			plt.plot([predY.min(), predY.max()],[predY.min(), predY.max()], color='r')
 			plt.xlabel("Predicted Returns")
 			plt.ylabel("Actual Returns")
 			plt.show()
@@ -131,7 +160,7 @@ if __name__=="__main__":
 		df1 = df1.join(predicted)
 		df1.to_csv("test.csv", index_label="Date")
 	
-	if len(learners)>2:
+	if len(cors)>2:
 		plt.plot(range(len(cors)), cors)
 		plt.ylabel("Correlation")
 		plt.xlabel("Model Complexity")

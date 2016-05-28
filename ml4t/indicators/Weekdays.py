@@ -11,18 +11,19 @@ class Weekdays(object):
 
     def getIndicator(self):
         daynames = [
-            "Sunday",
             "Monday",
             "Tuesday",
             "Wednesday",
             "Thursday",
             "Friday",
-            "Saturday"]
-    	wkday = [d.weekday() for d in self.data.index]
-    	week = np.zeros((self.data.shape[0],7))
-    	for i in range(7):
+            "Saturday",
+            "Sunday"]
+        wkday = [d.weekday() for d in self.data.index]
+        week = np.zeros((self.data.shape[0],7))
+        for i in range(7):
             week[:,i] = np.array(wkday)==i
         day_indicator = pd.DataFrame(week,
                                      index= self.data.index,
                                      columns=daynames)
-    	return day_indicator
+        day_indicator = day_indicator.ix[:,daynames[:5]]
+        return day_indicator

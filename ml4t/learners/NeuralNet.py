@@ -25,7 +25,7 @@ class Sigmoid(object):
 	def fn(x):
 		"""Return the sigmoid activation unit."""
 		expone = np.nan_to_num(np.exp(-x))
-		return np.array( 1./(1.-expone) )
+		return np.array( 1./(1.+expone) )
 	
 	@staticmethod
 	def prime(x):
@@ -217,12 +217,20 @@ class Network(object):
 					break
 				running_cost.pop(0)
 			running_cost.append(new_cost)
-			
+
+                
 			# Assess reset criteria
-			if new_cost > 2*init_cost or eta>1e2 or new_cost==np.inf:
+			if new_cost > 2*init_cost or eta>1e2 or \
+				new_cost==np.inf or new_cost==np.nan:
 				self.initialize_weights()
 				eta = 1e-5
 			
+			if _==iterations-1:
+				self.weights = [w for w in best_weights]
+				self.biases = [b for b in best_biases]
+				new_cost = self.cost.fn(self.forward(trainX), trainY)
+				self.display_error(_, new_cost, iterations)
+							
 			if new_cost<best_cost:
 				best_cost = new_cost
 				best_weights = [w for w in self.weights]

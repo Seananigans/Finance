@@ -6,6 +6,7 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import os
 from util import get_data, plot_data
+import pandas_datareader.data as web
 
 def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	# this is the function the autograder will call to test your code
@@ -23,7 +24,11 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	dates = pd.date_range(start_date, end_date)
 	
 	# 4 Read in data
-	portvals = get_data(symbols, dates)
+# 	portvals = get_data(symbols, dates)
+	adj_close = web.DataReader(name=symbols[0], data_source='yahoo', start=start_date, end=end_date)
+	adj_close = pd.DataFrame(adj_close["Adj Close"])
+	adj_close.columns = [symbols[0]]
+	portvals= adj_close
 	portvals = portvals[symbols]  # remove SPY
 	
 	# 5 Scan trades to update cash
@@ -60,18 +65,28 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 		longs = sum((time_own[time_own>0]*portvals.ix[date,:]).fillna(0.0))
 		shorts = sum((time_own[time_own<0]*portvals.ix[date,:]).fillna(0.0))
 		leverage = (longs + abs(shorts)) / (longs - abs(shorts) + cash)
-##		print "Longs:\t\t{}".format(longs)
-##		print "Shorts:\t\t{}".format(shorts)
-##		print "Cash:\t\t{}".format(cash)
-##		print "Leverage:\t{}".format(leverage)
+# 		print "Longs:\t\t{}".format(longs)
+# 		print "Shorts:\t\t{}".format(shorts)
+# 		print "Cash:\t\t{}".format(cash)
+# 		print "Leverage:\t{}".format(leverage)
 		
 		if leverage >= 2.0:
 			shorts, longs, cash = shorts0, longs0, cash0
 			time_own = time_own0.copy()
-##                        print "LEVERAGE EXCEEDED"
-##                        print "Potential Leverage:\t{}".format(leverage)
-##                        print "REJECTING ORDER"
-##                        print "Reset Leverage:\t{}".format((longs + abs(shorts)) / (longs - abs(shorts) + cash))
+			print "LEVERAGE EXCEEDED"
+			print "Potential Leverage:\t{}".format(leverage)
+			print "REJECTING ORDER"
+			print "Reset Leverage:\t{}".format((longs + abs(shorts)) / (longs - abs(shorts) + cash))
+			continue
+			
+		if cash<0:
+			bad_cash = cash
+			shorts, longs, cash = shorts0, longs0, cash0
+			time_own = time_own0.copy()
+			print "CASH EXCEEDED"
+			print "Potential Cash:\t{}".format(bad_cash)
+			print "REJECTING ORDER"
+			print "Reset Cash:\t{}".format(cash)
 			continue
 		
 		if stock_order == "BUY":
@@ -149,6 +164,7 @@ def test_code():
 ##	of = "./orders/orders-leverage-2.csv"
 ##	of = "./orders/orders-leverage-3.csv"
 	of = "./orders/orders_bollinger.csv"
+	of = "./orders/learner_orders.csv"
 ##	sv = 1000000
 	sv = 10000
 
@@ -167,8 +183,12 @@ def test_code():
 	dates = pd.date_range(start_date, end_date)
 
 	cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = get_portfolio_stats(portvals,0.0,252)
-	dfSPY = get_data(["$SPX"], dates)
-	dfSPY = dfSPY[["$SPX"]]
+# 	dfSPY = get_data(["$SPX"], dates)
+	dfSPY = web.DataReader(name="IBM", data_source='yahoo', start=start_date, end=end_date)
+	dfSPY = pd.DataFrame(dfSPY["Adj Close"])
+	dfSPY.columns = ["IBM"]
+	
+	dfSPY = dfSPY[["IBM"]]
 	cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = get_portfolio_stats(
 	dfSPY, 0.0,252)
 	

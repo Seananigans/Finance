@@ -74,8 +74,8 @@ if __name__=="__main__":
 	trainX, testX = mean_normalization(trainX, testX)
 	
 	# create learners list and train them
-	opt_var =  [10**j for j in range(-4,3)]
-	learners = [ net.ANNRegLearner(lmbda=i, use_trained=True) for i in opt_var]
+	opt_var =  [10**j for j in range(-3,3)]
+	learners = [ net.ANNRegLearner(lmbda=i, use_trained=False) for i in opt_var]
     
 	cors, rmsestrain, rmsestest = [], [], []
 	best_cor = 0
@@ -96,6 +96,9 @@ if __name__=="__main__":
 		print "In sample results"
 		print "RMSE: ", rmse
 		predYtrain = predYtrain.reshape(trainY.values.shape)
+		# Calculate TRAINING Mean Absolute Percent Error
+		mape = (np.abs(trainY - predYtrain)/trainY).mean()
+		print "MAPE: ", mape
 		if not no_cor:
 			c = np.corrcoef(predYtrain, y=trainY.values)
 			print "corr: ", c[0,1]
@@ -107,6 +110,9 @@ if __name__=="__main__":
 		print
 		print "Out of sample results"
 		print "RMSE: ", rmse
+		# Calculate TEST Mean Absolute Percent Error
+		mape = (np.abs(testY - predY)/testY).mean()
+		print "MAPE: ", mape
 		if testY.min()==-1.0:
 			predY[predY>0]=1.0
 			predY[predY<=0]=-1.0

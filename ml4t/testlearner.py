@@ -2,6 +2,7 @@
 Test a learner.	 (c) 2015 Tucker Balch
 """
 
+import datetime as dt
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -9,6 +10,7 @@ import pandas as pd
 from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
+from util import calculate_returns
 ##from learners import SVMLearner as svm
 
 def mean_normalization(trainX, testX):
@@ -73,20 +75,29 @@ if __name__=="__main__":
 	# Analyze datasets and returns
 	print testX.shape
 	print testY.shape
-	print "Average Training Return: {}".format(round( trainY.mean(),3 ))
-	print "Average Training Return: {}".format(round( testY.mean(),3 ))
+	
+	# Formatting for printing
+	if trainY.max()<=1.0:
+		output_type="Return"
+	else:
+		output_type="Price"
+	
+	# Calculate average value of returns or prices for output
+	print "Average Training {}: {}".format(output_type, round( trainY.mean(),3 ))
+	print "Average Training {}: {}".format(output_type, round( testY.mean(),3 ))
+	
+	# Calculate the error that would be achieved by predicting the average price of 
+	# the training output onto the testing output
 	err = np.zeros(testY.shape)
 	for i in range(err.shape[0]):
 			err[i] = trainY.mean()
 	print "RMSE of Train Average on Test Set: {}".format(
 			math.sqrt(((testY - err) ** 2).sum()/testY.shape[0])
 			)
-	err[0] += 0.00000001
-	print "Correlation of Train Average on Test Set: {}".format(
-			np.corrcoef(err, y=testY)[0,1]
-			)
+	
+	# Calculate how each feature correlates with the output
 	for i in range(trainX.shape[1]):
-			print np.corrcoef(trainX[:,i], trainY)[0][1]
+			print cols[i], np.corrcoef(trainX[:,i], trainY)[0][1], trainX[:,i].mean()
 #	plot_histogram(trainY)
 	
 	# Normalize training and test features
@@ -108,7 +119,7 @@ if __name__=="__main__":
 #							   bags = 10, 
 #							   boost = True, 
 #							   verbose = False)]
-	opt_var = range(5,100,5)
+	opt_var = range(5,50,7)
 	learners = [bag.BagLearner(learner = lrl.LinRegLearner,# knn.KNNLearner, #create a BagLearner
 								   kwargs = {},#{"k":3}, #
 								   bags = i,
@@ -125,20 +136,30 @@ if __name__=="__main__":
 		# evaluate in sample
 		predYtrain = learner.query(trainX) # get the predictions
 		print predYtrain.shape
-		rmse = math.sqrt(((trainY - predYtrain) ** 2).sum()/trainY.shape[0])
 		print
 		print "In sample results"
+		# Calculate TRAINING Root Mean Squared Error
+		rmse = math.sqrt(((trainY - predYtrain) ** 2).sum()/trainY.shape[0])
 		print "RMSE: ", rmse
+		# Calculate TRAINING Mean Absolute Percent Error
+		mape = (np.abs(trainY - predYtrain)/trainY).mean()
+		print "MAPE: ", mape
+		# Calculate correlation between predicted and TRAINING results
 		c = np.corrcoef(predYtrain, y=trainY)
 		print "corr: ", c[0,1]
 		rmsestrain.append(rmse)
 
 		# evaluate out of sample
 		predY = learner.query(testX) # get the predictions
-		rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
 		print
 		print "Out of sample results"
+		# Calculate TEST Root Mean Squared Error
+		rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
 		print "RMSE: ", rmse
+		# Calculate TEST Mean Absolute Percent Error
+		mape = (np.abs(testY - predY)/testY).mean()
+		print "MAPE: ", mape
+		# Calculate correlation between predicted and TEST results
 		c = np.corrcoef(predY, y=testY)
 		print "corr: ", c[0,1]
 		print
@@ -152,6 +173,9 @@ if __name__=="__main__":
 		predicted = predicted.join(pd.DataFrame(testY,
 						   columns=["Actual"],
 						   index=df.ix[train_rows:,:].index))
+		
+		predicted = calculate_returns(predicted, 5)
+		
 		if i%5==0:
 			plt.figure(1)
 			plt.subplot(211)
@@ -177,6 +201,11 @@ if __name__=="__main__":
 		plt.ylabel("Correlation")
 		plt.xlabel("Model Complexity")
 		plt.show()
+	
+	try:
+		print predicted.ix[dt.date.today()]
+	except:
+		print predicted.iloc[-2,:]
 	
 	# Plot testing & training error on the same plot to 
 	# show how error behaves with different models.

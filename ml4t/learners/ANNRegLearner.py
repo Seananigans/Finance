@@ -24,7 +24,7 @@ class ANNRegLearner(object):
         dataY =  dataY.reshape(dataY.shape[0], 1)
         output_size = dataY.shape[1]
         # Create potential network
-        sizes = [feature_size, 50, 20, output_size]
+        sizes = [feature_size, 50, output_size]
         if dataY.mean()<5.0:
             cost = CrossEntropyCost
             if dataY.min()==0.0 and dataY.max()==1.0:
@@ -34,14 +34,16 @@ class ANNRegLearner(object):
             else:
                 activations = [ReLU for i in sizes[1:]]
         else:
-        	activations = [Linear for i in sizes[1:]]
-        	cost = QuadraticCost
+            activations = [Linear for i in sizes[1:]]
+            cost = QuadraticCost
         net = Network(
-        		sizes = sizes, 
-        		cost = cost,
-            	activations = activations,
-            	lmbda = self.lmbda
-            	)
+                sizes = sizes, 
+                cost = cost,
+                activations = activations,
+                lmbda = self.lmbda,
+                dropout=1.0
+                )
+        print net.activations
         # Load saved network for continued training?
         filename = "network_models/stocknet.txt"
         if self.use_trained:
@@ -58,8 +60,11 @@ class ANNRegLearner(object):
         net_cost = self.network.cost.fn(preds, dataY)
         try:
             net2 = load(filename)
-            preds2 = net2.forward(dataX)
-            net2_cost = net2.cost.fn(preds2, dataY)
+            try:
+                preds2 = net2.forward(dataX)
+                net2_cost = net2.cost.fn(preds2, dataY)
+            except ValueError:
+                net2_cost = np.inf
         except IOError:
             net2_cost = np.inf
         if net2_cost>net_cost:
@@ -72,7 +77,7 @@ class ANNRegLearner(object):
         @returns the estimated values according to the saved model.
         """
         if type(points) != np.ndarray:
-			points = points.as_matrix()
+            points = points.as_matrix()
         return self.network.forward(points)
 
 if __name__=="__main__":

@@ -4,7 +4,7 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import math
 import os
-from util import get_data, plot_data, create_training_data, calculate_returns
+from util import get_data, plot_data, create_training_data
 # from learners import KNNLearner as knn
 from learners import LinRegLearner as lrl
 from learners import BagLearner as bag
@@ -97,8 +97,9 @@ train_predictions = predicted = pd.DataFrame(predYtrain,
 test_predictions = predicted = pd.DataFrame(predY,
 						   columns=["Predicted_Test"],
 						   index=df.ix[train_rows:,:].index)
-train_predictions = calculate_returns(train_predictions,horizon)
-test_predictions = calculate_returns(test_predictions,horizon)
+
+train_predictions.ix[:,:] = train_predictions.values/df.ix[:train_rows,[symbol]].values - 1.0
+test_predictions.ix[:,:] = test_predictions.values/df.ix[train_rows:,[symbol]].values - 1.0
 train_predictions.to_csv('train_preds.csv', index_label="Date")
 test_predictions.to_csv('test_preds.csv', index_label="Date")
 
@@ -107,31 +108,55 @@ buy_threshold = 0.03
 print np.sum(train_predictions > buy_threshold)
 print np.sum(test_predictions > buy_threshold)
 
-def learner_strategy(data, threshold=0.03, sym="IBM"):
+def learner_strategy(data, threshold=0.03, sym="IBM", num_shares=100):
 	df = pd.DataFrame()
 	df = df.append({'Date': np.nan, 'Symbol': np.nan, 'Order': np.nan, 'Shares': np.nan}, ignore_index=True)
 	cols = [col for col in data.columns if col.startswith("Pred")]
 	position = None
 	print "Date,Symbol,Order,Shares"
 	for i in data.index:
-		if data.ix[i,:].values[0]>threshold:
-			df = df.append( {
-						'Date': i.strftime("%Y-%m-%d"), 
-						'Symbol': sym, 
-						'Order': "BUY", 
-						'Shares': 100
-						}, 
-						ignore_index=True)
-			print "{0},{1},BUY,100".format(i.strftime("%Y-%m-%d"),sym)
-		if data.ix[i,:].values[0]<-threshold:
-			df = df.append( {
-						'Date': i.strftime("%Y-%m-%d"), 
-						'Symbol': sym, 
-						'Order': "SELL", 
-						'Shares': 100
-						}, 
-						ignore_index=True)
-			print "{0},{1},SELL,100".format(i.strftime("%Y-%m-%d"),sym)
+		if position==None:
+			if data.ix[i,:].values[0]>threshold:
+				position="LONG"
+				df = df.append( {
+							'Date': i.strftime("%Y-%m-%d"), 
+							'Symbol': sym, 
+							'Order': "BUY", 
+							'Shares': num_shares
+							}, 
+							ignore_index=True)
+				print "{0},{1},BUY,{2}".format(i.strftime("%Y-%m-%d"),sym,num_shares)
+# 			if data.ix[i,:].values[0]<-threshold:
+# 				position="SHORT"
+# 				df = df.append( {
+# 							'Date': i.strftime("%Y-%m-%d"), 
+# 							'Symbol': sym, 
+# 							'Order': "SELL", 
+# 							'Shares': num_shares
+# 							}, 
+# 							ignore_index=True)
+# 				print "{0},{1},SELL,{2}".format(i.strftime("%Y-%m-%d"),sym,num_shares)
+		else:
+# 			if data.ix[i,:].values[0]>threshold and position=="SHORT":
+# 				df = df.append( {
+# 							'Date': i.strftime("%Y-%m-%d"), 
+# 							'Symbol': sym, 
+# 							'Order': "BUY", 
+# 							'Shares': num_shares
+# 							}, 
+# 							ignore_index=True)
+# 				print "{0},{1},BUY,{2}".format(i.strftime("%Y-%m-%d"),sym,num_shares)
+# 				position=None
+			if data.ix[i,:].values[0]<-threshold and position=="LONG":
+				df = df.append( {
+							'Date': i.strftime("%Y-%m-%d"), 
+							'Symbol': sym, 
+							'Order': "SELL", 
+							'Shares': num_shares
+							}, 
+							ignore_index=True)
+				print "{0},{1},SELL,{2}".format(i.strftime("%Y-%m-%d"),sym,num_shares)
+				position=None
 	df = df.dropna()
 	df.index = df.Date
 	df = df[[col for col in df.columns if col!="Date"]]
@@ -139,5 +164,6 @@ def learner_strategy(data, threshold=0.03, sym="IBM"):
 	df =  df[colms]
 	df.to_csv("orders/learner_orders.csv", index_label="Date")
 
-learner_strategy(test_predictions)
+learner_strategy(test_predictions, num_shares=5)
+# learner_strategy(train_predictions, num_shares=5)
 

@@ -8,7 +8,7 @@ import os
 from util import get_data, plot_data
 import pandas_datareader.data as web
 
-def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
+def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, allowed_leverage=2.0):
 	# this is the function the autograder will call to test your code
 	# TODO: Your code here
 	# 1 Read CSV into trades array
@@ -70,7 +70,7 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 # 		print "Cash:\t\t{}".format(cash)
 # 		print "Leverage:\t{}".format(leverage)
 		
-		if leverage >= 2.0:
+		if leverage >= allowed_leverage:
 			shorts, longs, cash = shorts0, longs0, cash0
 			time_own = time_own0.copy()
 			print "LEVERAGE EXCEEDED"
@@ -112,6 +112,7 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
 	# 7 Scan cash and value to create total fund value
 	portvals = pd.DataFrame(portfolio + cash)
 	portvals.columns = ["Portfolio"]
+	print cash.iloc[-1]
 	return portvals
 	
 def get_portfolio_value(prices, allocs, start_val):
@@ -166,10 +167,10 @@ def test_code():
 	of = "./orders/orders_bollinger.csv"
 	of = "./orders/learner_orders.csv"
 ##	sv = 1000000
-	sv = 10000
+	sv = 1000
 
 	# Process orders
-	portvals = compute_portvals(orders_file = of, start_val = sv)
+	portvals = compute_portvals(orders_file = of, start_val = sv, allowed_leverage=2.0)
 	if isinstance(portvals, pd.DataFrame):
 		portvals = portvals[portvals.columns[0]] # just get the first column
 	else:

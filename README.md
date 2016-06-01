@@ -24,7 +24,8 @@
          * numpy
          * scipy
          * pandas
-         * sklearn
+         * scikit-learn
+         * matplotlib
 
 3) How do I contribute?
 * Simply click on the issues tab and tell me what you think needs changing.

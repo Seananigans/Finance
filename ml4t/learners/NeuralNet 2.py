@@ -245,7 +245,81 @@ class Network(object):
 					self.biases = [b for b in best_biases]
 					something_wrong=0
 				
-						
+	def grad_descent(self, trainX, trainY, iterations=10000, eta = 1e-5):
+		# Preparing for stochasticity
+		n_smpl = float(trainX.shape[0])
+		# Learning rate and items for adjustment criteria
+		old_costs = []
+		# Items for stopping criteria
+		running_cost = []
+		# for reset criteria
+		## calculate initial cost (should only get better from here)
+		l2_norm_squared = sum([(w**2).sum() for w in self.weights])
+		init_cost = self.cost.fn(self.forward(trainX), trainY)
+		init_cost += 0.5*self.lmbda/n_smpl*l2_norm_squared
+		best_cost = init_cost
+		best_weights = [w for w in self.weights]
+		best_biases = [b for b in self.biases]
+		## set malfunctions equal to 0
+		something_wrong = 0
+		for _ in range(iterations):
+			# Retrieve derivatives for current weights and biases
+			nabla_b, nabla_w = self.backprop(trainX, trainY)# Nesterov Momentum 2: Store previous values of velocity update
+			# Nesterov Momentum: Store the lookahead value as the weights and biases
+			self.weights = [w - eta*nw
+                                        for w, nw in zip(self.weights, nabla_w)]
+			self.biases = [b - eta*nb
+                                       for b, nb in zip(self.biases, nabla_b)]
+			
+			l2_norm_squared = sum([(w**2).sum() for w in self.weights])
+			new_cost = self.cost.fn(self.forward(trainX), trainY)
+			new_cost += 0.5*self.lmbda/2/n_smpl*l2_norm_squared
+			
+			# adjust learning rate (eta)
+			eta = self.adjust_eta(eta, old_costs, new_cost)
+			old_costs.append(new_cost)
+			
+			# Assess learning
+			if _%(iterations/20)==0:
+				self.display_error(_, new_cost, iterations)
+				
+			# Assess stopping criteria
+			if len(running_cost)>=100:
+				cost_stdev = np.std(running_cost)
+				cost_avg = np.mean(running_cost)
+				if cost_stdev<1e-7 and cost_avg>new_cost: 
+					if new_cost>init_cost:
+						print "No good solution found"
+					break
+				running_cost.pop(0)
+			running_cost.append(new_cost)
+
+                
+			# Assess reset criteria
+			if new_cost > 2*init_cost or eta>1e2 or \
+				new_cost==np.inf or new_cost==np.nan:
+				self.initialize_weights()
+				eta = 1e-5
+			
+			if _==iterations-1:
+				self.weights = [w for w in best_weights]
+				self.biases = [b for b in best_biases]
+				new_cost = self.cost.fn(self.forward(trainX), trainY)
+				self.display_error(_, new_cost, iterations)
+							
+			if new_cost<best_cost:
+				best_cost = new_cost
+				best_weights = [w for w in self.weights]
+				best_biases = [b for b in self.biases]
+			
+			if len(old_costs)>2:
+				if new_cost==np.mean(old_costs[-3:]) or new_cost>best_cost:
+					something_wrong+=1
+					
+				if something_wrong>5:
+					self.weights = [w for w in best_weights]
+					self.biases = [b for b in best_biases]
+					something_wrong=0
 
 	def adjust_eta(self, eta, old_costs, new_cost):
 		len_reached = len(old_costs)>=1000
@@ -298,49 +372,49 @@ def load(filename):
 		return net
 
  
-# trainX=np.array(
-#  [[0.],
-#   [1.],
-#   [2.],
-#   [3.],
-#   [4.]]
-#  )
-# 
-# trainY=np.array(
-#  [[0., 0., 0.],
-#   [1., 2., 3.],
-#   [4., 4., 6.],
-#   [9., 6., 9.],
-#   [16., 8., 12.]]
-#  )
-# 
-# trainY=np.array(
-#  [[1., 0., 0.],
-#   [0., 1., 0.],
-#   [1., 0., 0.],
-#   [0., 1., 0.],
-#   [1., 0., 0.]]
-#  )
-# acts = [ReLU, Softmax]
-# 
-# feature_size = trainX.shape[1]
-# output_size = trainY.shape[1]
-# # Create test network
-# net = Network([feature_size,
-#         1000,
-#         output_size],
-#         cost=CrossEntropyCost,
-#         dropout=1.,
-#        activations=acts)
-# # Learn from data
-# net.sgd(trainX, trainY, iterations=10000)
-# # Produce test output
-# pred = net.forward(trainX)
-# if acts[-1]!=Softmax:
-# 	print np.round(pred)
-# else:
-# 	mx = pred.max(axis=1, keepdims=True)*np.ones(pred.shape)
-# 	print np.round(pred,2)
-# 	print ( mx==pred )* 1.
-# print net.cost.fn(pred, trainY)
+##trainX=np.array(
+##[[0.],
+##[1.],
+##[2.],
+##[3.],
+##[4.]]
+##)
+##
+##trainY=np.array(
+##[[0., 0., 0.],
+##[1., 2., 3.],
+##[4., 4., 6.],
+##[9., 6., 9.],
+##[16., 8., 12.]]
+##)
+##
+##trainY=np.array(
+##[[1., 0., 0.],
+##[0., 1., 0.],
+##[1., 0., 0.],
+##[0., 1., 0.],
+##[1., 0., 0.]]
+##)
+##acts = [ReLU, Softmax]
+##
+##feature_size = trainX.shape[1]
+##output_size = trainY.shape[1]
+### Create test network
+##net = Network([feature_size,
+## 1000,
+## output_size],
+## cost=CrossEntropyCost,
+## dropout=1.,
+##activations=acts)
+### Learn from data
+##net.grad_descent(trainX, trainY, iterations=10000)
+### Produce test output
+##pred = net.forward(trainX)
+##if acts[-1]!=Softmax:
+##        print np.round(pred)
+##else:
+##        mx = pred.max(axis=1, keepdims=True)*np.ones(pred.shape)
+##        print np.round(pred,2)
+##        print ( mx==pred )* 1.
+##print net.cost.fn(pred, trainY)
 

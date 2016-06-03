@@ -1,6 +1,11 @@
 import re
 import numpy as np
-fhand = open('test.txt')
+import sys
+
+try:
+        fhand = open(sys.argv[1])
+except IndexError:
+        fhand = open('spytest.txt')
 
 port_returns = []
 spy_returns = []
@@ -22,7 +27,7 @@ for line in fhand:
 		spy_sharpe.append(returns)
 
 print "Average Portfolio Return: {}".format(np.mean(port_returns))
-print "Average Portfolio Sharpe Ratio: {}".format(np.nanmean(port_sharpe))
 print "Average SPY Return: {}".format(np.mean(spy_returns))
+print "Average Portfolio Sharpe Ratio: {}".format(np.nanmean(port_sharpe))
 print "Average SPY Sharpe Ratio: {}".format(np.nanmean(spy_sharpe))
 fhand.close()

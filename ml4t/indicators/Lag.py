@@ -4,6 +4,7 @@ import pandas as pd
 class Lag(object):
     def __init__(self, window=1):
         self.window = window
+        self.name = "Lag_{}".format(window)
 
     def addEvidence(self, data):
         self.data = data

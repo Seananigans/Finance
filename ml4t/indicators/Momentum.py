@@ -4,6 +4,7 @@ import pandas as pd
 class Momentum(object):
     def __init__(self, window=5):
         self.window = window
+        self.name = "Momentum_{}".format(window)
 
     def addEvidence(self, data):
         self.data = data

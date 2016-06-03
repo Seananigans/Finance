@@ -7,4 +7,4 @@ def rmse(expected, predictions):
 	return math.sqrt(((expected - predictions) ** 2).sum()/expected.shape[0])
 
 def mape(expected, predictions):
-	return (np.abs(expected - predictions)/expected).mean()
+	return np.abs((expected - predictions)/expected).mean()

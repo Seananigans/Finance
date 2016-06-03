@@ -4,7 +4,7 @@ import datetime as dt
 
 class Weekdays(object):
     def __init__(self, window=1):
-        pass
+        self.name = "Weekdays"
 
     def addEvidence(self, data):
         self.data = data

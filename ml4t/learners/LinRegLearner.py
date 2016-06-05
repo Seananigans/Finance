@@ -3,6 +3,10 @@ A simple wrapper for linear regression.  (c) 2015 Tucker Balch
 """
 
 import numpy as np
+try:
+	from sklearn.linear_model import LinearRegression
+except:
+	pass
 
 class LinRegLearner(object):
 
@@ -16,13 +20,17 @@ class LinRegLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
+        
+        try:
+        	self.model = LinearRegression()
+        	self.model.fit(dataX, dataY)
+        except:
+			# slap on 1s column so linear regression finds a constant term
+			newdataX = np.ones([dataX.shape[0],dataX.shape[1]+1])
+			newdataX[:,0:dataX.shape[1]]=dataX
 
-        # slap on 1s column so linear regression finds a constant term
-        newdataX = np.ones([dataX.shape[0],dataX.shape[1]+1])
-        newdataX[:,0:dataX.shape[1]]=dataX
-
-        # build and save the model
-        self.model_coefs, residuals, rank, s = np.linalg.lstsq(newdataX, dataY)
+			# build and save the model
+			self.model_coefs, residuals, rank, s = np.linalg.lstsq(newdataX, dataY)
         
     def query(self,points):
         """
@@ -30,8 +38,11 @@ class LinRegLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        if len(self.model_coefs)<3:print self.model_coefs
-        return (self.model_coefs[:-1] * points).sum(axis = 1) + self.model_coefs[-1]
+        try:
+        	return self.model.predict(points)
+        except:
+			if len(self.model_coefs)<3:print self.model_coefs
+			return (self.model_coefs[:-1] * points).sum(axis = 1) + self.model_coefs[-1]
 
 if __name__=="__main__":
     print "the secret clue is 'zzyzx'"

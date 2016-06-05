@@ -7,6 +7,7 @@ from util import get_data, plot_data
 from analysis import get_portfolio_value, get_portfolio_stats, plot_normalized_data
 from learners import BagLearner
 from indicators import Bollinger, Momentum, Volatility
+from learners import ANNRegLearner as net
 
 def test_run():
     """Driver function."""
@@ -46,13 +47,12 @@ def test_run():
     for indicator in indicators:
 		indicator.addEvidence( stock_prices )
 		data_set = data_set.join(indicator.getIndicator(), how="inner")
-    data_set.dropna(inplace=True)
-
-    #print learning_set   
-        
+    
+    
     #Learning
     learner = BagLearner.BagLearner()
-    learning_set = data_set.ix[learning_dates]
+    learner = net.ANNRegLearner(lmbda=100.0)
+    learning_set = data_set.ix[learning_dates].dropna()
     trainX = learning_set.iloc[:, 1:4].as_matrix()
     trainY = learning_set['Prediction'].as_matrix()
     learner.addEvidence(trainX, trainY)
@@ -65,7 +65,9 @@ def test_run():
         
     #Build dataframe to show results    
     results = pd.DataFrame( predY, columns = ['PredictedY'], index = test_dates )
+    results.dropna(inplace=True)
     results['RealizedY'] = testY
+    testY = testY.reshape(testY.shape[0],1)
     results['Error'] = (testY - predY)
     rmse = np.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
     

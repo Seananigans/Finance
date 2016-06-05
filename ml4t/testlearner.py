@@ -11,45 +11,13 @@ from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
 from util import calculate_returns
-##from learners import SVMLearner as svm
-
-def mean_normalization(trainX, testX):
-	"""Returns the features normalized by the mean and standard deviation of
-	feature values in the training set."""
-	trnX = ( trainX - trainX.mean(axis=0) )/trainX.std(axis=0)
-	tstX = ( testX - trainX.mean(axis=0) )/trainX.std(axis=0)
-	return trnX, tstX
-	
-def max_normalization(trainX, testX):
-	"""Returns the features normalized by the maximum 
-	feature values in the training set."""
-	trnX = trainX / trainX.max(axis=0)
-	tstX = testX / trainX.max(axis=0)
-	return trnX, tstX
-	
-def plot_histogram(trainY):
-	"""Plots a histogram of the input with vertical lines 
-	indicating the mean and +/- 1 standard deviation."""
-	mns = trainY.mean(axis=0)
-	sds = trainY.std(axis=0)
-	plt.hist(trainY)
-	plt.xlabel("Daily Returns")
-	plt.ylabel("Counts")
-	mean_lines = [plt.axvline(mn, color="k", lw=3) for mn in mns]
-	upper_std_lines = [plt.axvline(mn + sd, color="r", lw=2) for sd in sds]
-	lower_std_lines = [plt.axvline(mn - sd, color="r", lw=2) for sd in sds]
-	std_lines = upper_std_lines+lower_std_lines
-	lines = mean_lines+std_lines
-	#Create Labels
-	labels = [None for i in lines]
-	labels[:mns.shape[0]] = [
-		"Avg. {} Day\nReturn:	{}%".format(5,
-											round(mn*100,2)) for mn in mns]
-	labels[mns.shape[0]:] = [
-		"Std. Dev.\nof Returns: {}%".format(round(sd*100,2)) for sd in sds]
-	plt.legend(lines,#[mean_line, std_line],
-			   labels)
-	plt.show()
+from error_metrics import rmse, mape
+from normalization import mean_normalization, max_normalization
+from plotting import plot_histogram
+try:
+	from learners import SVMLearner as svm
+except:
+	pass
 	
 if __name__=="__main__":
 
@@ -98,7 +66,6 @@ if __name__=="__main__":
 	# Calculate how each feature correlates with the output
 	for i in range(trainX.shape[1]):
 			print cols[i], np.corrcoef(trainX[:,i], trainY)[0][1], trainX[:,i].mean()
-#	plot_histogram(trainY)
 	
 	# Normalize training and test features
 	trainX, testX = mean_normalization(trainX, testX)
@@ -139,32 +106,32 @@ if __name__=="__main__":
 		print
 		print "In sample results"
 		# Calculate TRAINING Root Mean Squared Error
-		rmse = math.sqrt(((trainY - predYtrain) ** 2).sum()/trainY.shape[0])
-		print "RMSE: ", rmse
+		RMSE = rmse(trainY, predYtrain)#math.sqrt(((trainY - predYtrain) ** 2).sum()/trainY.shape[0])
+		print "RMSE: ", RMSE
 		# Calculate TRAINING Mean Absolute Percent Error
-		mape = (np.abs(trainY - predYtrain)/trainY).mean()
-		print "MAPE: ", mape
+		MAPE = mape(trainY, predYtrain)
+		print "MAPE: ", MAPE
 		# Calculate correlation between predicted and TRAINING results
 		c = np.corrcoef(predYtrain, y=trainY)
 		print "corr: ", c[0,1]
-		rmsestrain.append(rmse)
+		rmsestrain.append(RMSE)
 
 		# evaluate out of sample
 		predY = learner.query(testX) # get the predictions
 		print
 		print "Out of sample results"
 		# Calculate TEST Root Mean Squared Error
-		rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
-		print "RMSE: ", rmse
+		RMSE = rmse(testY,predY)#math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
+		print "RMSE: ", RMSE
 		# Calculate TEST Mean Absolute Percent Error
-		mape = (np.abs(testY - predY)/testY).mean()
-		print "MAPE: ", mape
+		MAPE = mape(testY, predY)#(np.abs(testY - predY)/testY).mean()
+		print "MAPE: ", MAPE
 		# Calculate correlation between predicted and TEST results
 		c = np.corrcoef(predY, y=testY)
 		print "corr: ", c[0,1]
 		print
 		cors.append(c[0,1])
-		rmsestest.append(rmse)
+		rmsestest.append(RMSE)
 		
 		# Join predicted values and actual values into a dataframe.
 		predicted = pd.DataFrame(predY,

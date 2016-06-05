@@ -4,13 +4,12 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
-import os
+import os, sys
 from util import get_data, plot_data
-import pandas_datareader.data as web
+##import pandas_datareader.data as web
+from dataset_construction import create_input
 
 def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, allowed_leverage=2.0):
-	# this is the function the autograder will call to test your code
-	# TODO: Your code here
 	# 1 Read CSV into trades array
 	trades = pd.read_csv(orders_file, index_col="Date", 
 						parse_dates=True, na_values=['nan'])
@@ -20,13 +19,12 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, a
 	
 	# 3 Scan trades for dates
 	start_date = pd.to_datetime(trades.index.min())
-	end_date = pd.to_datetime(trades.index.max())
-	dates = pd.date_range(start_date, end_date)
 	
 	# 4 Read in data
 # 	portvals = get_data(symbols, dates)
-	adj_close = web.DataReader(name=symbols[0], data_source='yahoo', start=start_date, end=end_date)
-	adj_close = pd.DataFrame(adj_close["Adj Close"])
+##	adj_close = web.DataReader(name=symbols[0], data_source='yahoo', start=start_date, end=end_date)
+	adj_close = create_input(symbols[0], indicators=[], store=False).ix[start_date:,:]
+	adj_close = pd.DataFrame(adj_close[[col for col in adj_close.columns if col.startswith("Adj")]])
 	adj_close.columns = [symbols[0]]
 	portvals= adj_close
 	portvals = portvals[symbols]  # remove SPY
@@ -79,15 +77,15 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, a
 			print "Reset Leverage:\t{}".format((longs + abs(shorts)) / (longs - abs(shorts) + cash))
 			continue
 			
-		if cash<0:
-			bad_cash = cash
-			shorts, longs, cash = shorts0, longs0, cash0
-			time_own = time_own0.copy()
-			print "CASH EXCEEDED"
-			print "Potential Cash:\t{}".format(bad_cash)
-			print "REJECTING ORDER"
-			print "Reset Cash:\t{}".format(cash)
-			continue
+# 		if cash<0:
+# 			bad_cash = cash
+# 			shorts, longs, cash = shorts0, longs0, cash0
+# 			time_own = time_own0.copy()
+# 			print "CASH EXCEEDED"
+# 			print "Potential Cash:\t{}".format(bad_cash)
+# 			print "REJECTING ORDER"
+# 			print "Reset Cash:\t{}".format(cash)
+# 			continue
 		
 		if stock_order == "BUY":
 			on_hand.ix[date, sym] -= n_shares*price
@@ -145,29 +143,37 @@ def get_sharpe_ratio(allocs, prices):
 	sharpe_ratio = get_portfolio_stats(port_val, daily_rf=0.0, samples_per_year=252)[3]
 	return -sharpe_ratio
 
-def plot_normalized(data, title = "Daily portfolio value and $SPX"):
-        ax = (data/data.iloc[0]).plot()
-        plt.title(title)
-        plt.ylabel("Normalized Price")
-        plt.show()
+def plot_normalized(data, symbol=None):
+	if symbol:
+		title = "Daily portfolio value and {}".format(symbol)
+	else:
+		title = "Daily portfolio value and $SPX"
+	ax = (data/data.iloc[0]).plot()
+	plt.title(title)
+	plt.ylabel("Normalized Price")
+	if symbol:
+		plt.savefig("figures/{}.png".format(symbol))
+	else:
+		plt.savefig("figures/$SPX.png")
         
 def test_code():
 	# this is a helper function you can use to test your code
 	# note that during autograding his function will not be called.
 	# Define input parameters
 
-##	of = "./orders/orders-test.csv"
-## 	of = "./orders/orders-short.csv"
-## 	of = "./orders/orders.csv"
-##	of = "./orders/orders2.csv"
-##	of = "./orders/orders3.csv"
-##	of = "./orders/orders-leverage-1.csv"
-##	of = "./orders/orders-leverage-2.csv"
-##	of = "./orders/orders-leverage-3.csv"
 	of = "./orders/orders_bollinger.csv"
 	of = "./orders/learner_orders.csv"
-##	sv = 1000000
-	sv = 1000
+	try:
+		sv = float(sys.argv[2])
+	except IndexError:
+		sv = 1000
+	
+	try:
+		symbol = pd.read_csv(of, index_col="Date", parse_dates=True, 
+								na_values=['nan']).Symbol[0]
+	except IndexError:
+		print "There are no orders in this dataframe."
+		exit()
 
 	# Process orders
 	portvals = compute_portvals(orders_file = of, start_val = sv, allowed_leverage=2.0)
@@ -184,34 +190,41 @@ def test_code():
 	dates = pd.date_range(start_date, end_date)
 
 	cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = get_portfolio_stats(portvals,0.0,252)
-# 	dfSPY = get_data(["$SPX"], dates)
-	dfSPY = web.DataReader(name="IBM", data_source='yahoo', start=start_date, end=end_date)
-	dfSPY = pd.DataFrame(dfSPY["Adj Close"])
-	dfSPY.columns = ["IBM"]
+        dfSPY = create_input(symbol, indicators = [], store=False).ix[start_date:end_date,:]
+##        dfSPY = dfSPY.ix[start_date:end_date,:]
+	dfSPY = pd.DataFrame(dfSPY[[col for col in dfSPY.columns if col.startswith("Adj")]])
+	dfSPY.columns = [symbol]
 	
-	dfSPY = dfSPY[["IBM"]]
+	dfSPY = dfSPY[[symbol]]
 	cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = get_portfolio_stats(
 	dfSPY, 0.0,252)
 	
 	# Compare portfolio against $SPX
-	print "Date Range: {} to {}".format(start_date, end_date)
+	print "Date Range: {} to {}".format(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
 	print
 	print "Sharpe Ratio of Fund: {}".format(sharpe_ratio)
-	print "Sharpe Ratio of SPY : {}".format(sharpe_ratio_SPY)
+	print "Sharpe Ratio of {}: {}".format(symbol, float(sharpe_ratio_SPY))
 	print
 	print "Cumulative Return of Fund: {}".format(cum_ret)
-	print "Cumulative Return of SPY : {}".format(cum_ret_SPY)
+	print "Cumulative Return of {}: {}".format(symbol, float(cum_ret_SPY))
 	print
 	print "Standard Deviation of Fund: {}".format(std_daily_ret)
-	print "Standard Deviation of SPY : {}".format(std_daily_ret_SPY)
+	print "Standard Deviation of {}: {}".format(symbol, float(std_daily_ret_SPY))
 	print
 	print "Average Daily Return of Fund: {}".format(avg_daily_ret)
-	print "Average Daily Return of SPY : {}".format(avg_daily_ret_SPY)
+	print "Average Daily Return of {}: {}".format(symbol, float(avg_daily_ret_SPY))
 	print
 	print "Final Portfolio Value: {}".format(portvals[-1])
 
-        temp = dfSPY.join(portvals)
-	plot_normalized(temp)
+	temp = dfSPY.join(portvals)
+	try:
+		if sys.argv[1].lower()=='t':
+			plot_normalized(temp, symbol)
+		elif sys.argv[1].lower()=='tt':
+			plot_normalized(temp, symbol)
+			plt.show()
+	except IndexError:
+		pass
 
 	
 if __name__ == "__main__":

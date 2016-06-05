@@ -35,26 +35,26 @@ if __name__=="__main__":
 	symbol="MMM"
 	# get stock data
 	filename= "webdata/{}.csv".format(symbol)
+##	upper_length = 1
 ##	opt_var = range(1,20)
 ##	indicators = [[RSI(i)] for i in opt_var]
 	indicators = [RSI(9), Weekdays(), Lag(5), Volatility(15), SimpleMA(10), ExponentialMA(10), Bollinger(18), Momentum(10)] + [Lag(i) for i in range(1,5)]
 	empty_list = []
-##	[empty_list.append([i]) for i in indicators]
-##	[[empty_list.append([i,j]) for i in indicators if i!=j] for j in indicators]
-##	[[[empty_list.append([i,j,k]) for i in indicators if (i!=j and j!=k and i!=k)] for j in indicators] for k in indicators]
-	[[[[empty_list.append([i,j,k,l]) for i in indicators if (i!=j and i!=k and i!=l and j!=k and j!=l and k!=l)] for j in indicators] for k in indicators] for l in indicators]
-        indicators = empty_list
+	upper_length = 4
+	for j in range(1,upper_length):
+            for i in combinations(indicators,j):
+                empty_list.append(list(i))
+	indicators = empty_list
 ##      Best 1 set: EMA_10
 ##      Best 2 set: Bollinger_18, SMA_10
 ##      Best 3 set: Weekdays, SMA_10, Bollinger_18
 ##      Best 4 set: Weekdays, Lag_5, Bollinger_18, SMA_10
-##	indicators = [[ind] for ind in indicators]
-##	indicators = [[i,j] for i,j in zip(indicators, indicators[1:])]
-##	indicators = [[i,j,k] for i,j,k in zip(indicators, indicators[1:], indicators[2:])]
+
         opt_var = range(len(indicators))
 ##        opt_var = [[ind.name for ind in indicator] for indicator in indicators]
 	# create a learner and train it
-        learner = bag.BagLearner(learner=lrl.LinRegLearner, kwargs={}, bags=15, boost=True)
+##        learner = bag.BagLearner(learner=lrl.LinRegLearner, kwargs={}, bags=15, boost=True)
+	learner = lrl.LinRegLearner()
 	# Collect scoring metrics for each learner for later comparison
 	cors, rmsestrain, rmsestest, mapestrain, mapestest = [], [], [], [], []
 	for i, indicator in enumerate(indicators):
@@ -169,5 +169,5 @@ if __name__=="__main__":
 	plt.xlabel("Model Complexity")
 	plt.ylabel("MAPE")
 	plt.show()
-
-	pd.DataFrame(np.array([[ind.name for ind in x]+[y] for y,x in sorted(zip(rmsestest, indicators))])).to_csv("test_{}_indicator.csv".format(len(indicators[0])))
+        csv_name = "test_{}_indicators.csv".format(upper_length)
+	pd.DataFrame(np.array([[len(x)]+[y]+[ind.name for ind in x] for y,x in sorted(zip(rmsestest, indicators))])).to_csv(csv_name)

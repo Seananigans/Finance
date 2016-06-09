@@ -24,7 +24,13 @@ def predict_spy_future(horizon=5, verbose=False):
 	fhand = pd.read_csv("spy_list.csv")
 	spy_list = list(fhand.Symbols)
 	results = pd.DataFrame()
-	results = results.append({'Date': np.nan, "Return Date": np.nan, 'Symbol': np.nan, 'Return': np.nan, 'Test Error (RMSE)': np.nan}, ignore_index=True)
+	results = results.append({'Date': np.nan,
+                                  "ReturnDate": np.nan,
+                                  'Symbol': np.nan,
+                                  'Return': np.nan,
+                                  'TestError(RMSE)': np.nan,
+                                  'Benchmark_0(RMSE)': np.nan,
+                                  'TestCorrelation': np.nan}, ignore_index=True)
 
 	for sym in spy_list:
 		if sym == "ADT": continue #Something about ADT screws up the results
@@ -53,6 +59,7 @@ def predict_spy_future(horizon=5, verbose=False):
 		predY = learner.query(testX) # get the predictions
 		# Calculate TEST Root Mean Squared Error
 		RMSE = rmse(testY,predY)
+		bench = rmse(testY,0.0)
 		# Calculate TEST Mean Absolute Percent Error
 		MAPE = mape(testY,predY)
 		# Calculate correlation between predicted and TEST results
@@ -69,14 +76,16 @@ def predict_spy_future(horizon=5, verbose=False):
 	
 		results = results.append( {
 						'Date': features.index[-1], 
-						'Return Date': features.index[-1] + BDay(horizon),
+						'ReturnDate': features.index[-1] + BDay(horizon),
 						'Symbol': sym, 
 						'Return': float(future_pred), 
-						'Test Error (RMSE)': RMSE
+						'TestError(RMSE)': RMSE,
+                                                'Benchmark_0(RMSE)': bench,
+                                                'TestCorrelation': c[0,1]
 						}, 
 						ignore_index=True)
 	results = results.dropna()
-	results = results[["Date","Return Date","Symbol", "Return","Test Error (RMSE)"]]
+	results = results[["Date","ReturnDate","Symbol", "Return","TestError(RMSE)","Benchmark_0(RMSE)","TestCorrelation"]]
 	results = results.set_index("Date")
 	results	= results.sort_values(by=["Return"],ascending=False)
 	results.to_csv('results.csv', index="Date")

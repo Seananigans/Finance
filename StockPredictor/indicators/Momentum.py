@@ -11,6 +11,6 @@ class Momentum(object):
 
     def getIndicator(self):
     	mom = (self.data/self.data.shift(self.window)) - 1
-        mom.columns = ["Momentum_"+x for x in mom.columns]
+        mom.columns = [self.name+"_"+x for x in mom.columns]
 
         return mom

@@ -11,6 +11,6 @@ class ExponentialMA(object):
 
     def getIndicator(self):
         ema = self.data/pd.ewma(self.data, span=self.window) - 1
-        ema.columns = ["EMA_"+x for x in ema.columns]
+        ema.columns = [self.name+"_"+x for x in ema.columns]
 
         return ema

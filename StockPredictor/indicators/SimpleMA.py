@@ -11,6 +11,6 @@ class SimpleMA(object):
 
     def getIndicator(self):
         sma = self.data/pd.rolling_mean(self.data, self.window) - 1
-        sma.columns = ["SMA_"+x for x in sma.columns]
+        sma.columns = [self.name+"_"+x for x in sma.columns]
 
         return sma

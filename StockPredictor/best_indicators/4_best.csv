@@ -1,0 +1,91 @@
+,Indicator,Error,Value
+42,"Bollinger_19, Bollinger_5, EMA_4, EMA_20",0.019623375,1
+44,"Bollinger_4, EMA_4, EMA_20",0.023742039,1
+77,"EMA_2, EMA_4, EMA_20",0.025905859,2
+57,"EMA_4, EMA_20",0.026466692,1
+80,"Bollinger_5, EMA_8",0.02942441,2
+2,"Bollinger_4, Bollinger_19, EMA_4",0.029593493,2
+19,"Bollinger_4, Bollinger_19",0.030380795,3
+81,"Bollinger_5, EMA_4, EMA_8",0.030797451,1
+31,"Bollinger_5, EMA_8, EMA_20",0.0321977,4
+88,"Bollinger_19, EMA_4",0.03295376,5
+56,"Bollinger_4, Bollinger_5, EMA_2, EMA_20",0.03298164,1
+25,"Bollinger_19, EMA_4, EMA_20",0.032988664,2
+21,"Bollinger_19, EMA_2, EMA_4, EMA_20",0.03357709,1
+86,"Bollinger_4, Bollinger_19, EMA_8, EMA_20",0.033811814,2
+3,"Bollinger_4, Bollinger_19, EMA_8",0.034817839,3
+27,"Bollinger_19, EMA_2, EMA_8, EMA_20",0.034986014,2
+79,"Bollinger_5, EMA_4, EMA_8, EMA_20",0.035120333,3
+39,"Bollinger_4, Bollinger_19, EMA_20",0.035276925,2
+53,"EMA_2, EMA_8, EMA_20",0.03539553,3
+67,"Bollinger_19, EMA_2, EMA_8",0.035480034,3
+75,"Bollinger_4, EMA_2, EMA_8, EMA_20",0.035515606,1
+84,"Bollinger_4, EMA_2, EMA_20",0.035599516,2
+51,"Bollinger_4, EMA_2, EMA_8",0.035655702,1
+11,"Bollinger_4, EMA_2, EMA_4, EMA_8",0.035926763,4
+78,"Bollinger_5, EMA_4",0.035965978,2
+74,"Bollinger_4, EMA_4, EMA_8",0.036357145,4
+20,"Bollinger_4, EMA_8",0.036875323,2
+65,"Bollinger_19, EMA_2, EMA_4",0.036971321,4
+45,"Bollinger_4, Bollinger_5, EMA_8, EMA_20",0.037072351,3
+33,"Bollinger_5, EMA_2, EMA_20",0.037326679,2
+69,"Bollinger_4, Bollinger_5, EMA_2",0.037389823,2
+12,"EMA_2, EMA_4, EMA_8, EMA_20",0.037462497,36
+17,"Bollinger_19, Bollinger_5, EMA_20",0.037501844,2
+8,"Bollinger_19, EMA_2, EMA_20",0.037553399,1
+16,"Bollinger_5, EMA_2, EMA_8, EMA_20",0.037891674,1
+40,"Bollinger_19, Bollinger_5, EMA_8, EMA_20",0.037989168,2
+5,"EMA_8, EMA_20",0.037994734,11
+36,"Bollinger_4, Bollinger_19, Bollinger_5, EMA_2",0.038028036,2
+64,"Bollinger_19, EMA_4, EMA_8",0.038147058,3
+32,"Bollinger_19, EMA_4, EMA_8, EMA_20",0.038200276,12
+38,"Bollinger_5, EMA_2, EMA_4, EMA_20",0.038502128,3
+54,"Bollinger_4, Bollinger_19, EMA_2, EMA_8",0.038716167,2
+62,"Bollinger_19, Bollinger_5, EMA_2, EMA_4",0.039261753,2
+48,"Bollinger_4, Bollinger_5, EMA_20",0.039373512,2
+41,"Bollinger_4, Bollinger_19, EMA_2, EMA_4",0.039409914,1
+82,"EMA_4, EMA_8, EMA_20",0.039463584,8
+60,"Bollinger_19, Bollinger_5, EMA_2, EMA_8",0.039812528,3
+4,"Bollinger_4, EMA_2, EMA_4, EMA_20",0.040234556,1
+83,"Bollinger_19, EMA_8",0.040342881,15
+52,"Bollinger_4, EMA_2, EMA_4",0.040866653,2
+63,"Bollinger_19, Bollinger_5",0.041119375,3
+26,"Bollinger_19, EMA_8, EMA_20",0.041791116,1
+73,EMA_4,0.041932287,14
+50,Bollinger_19,0.042134304,21
+6,"Bollinger_19, EMA_2, EMA_4, EMA_8",0.042780898,8
+18,"Bollinger_19, Bollinger_5, EMA_4, EMA_8",0.043151172,5
+15,Bollinger_5,0.043286084,14
+13,"Bollinger_19, Bollinger_5, EMA_8",0.043468694,3
+22,"Bollinger_4, EMA_2",0.043719576,15
+66,"Bollinger_4, EMA_4, EMA_8, EMA_20",0.043819423,10
+47,"Bollinger_5, EMA_2, EMA_4",0.044410298,4
+10,EMA_20,0.04461224,10
+9,"Bollinger_19, Bollinger_5, EMA_2",0.04485408,4
+49,"EMA_2, EMA_4",0.0456207,8
+59,"Bollinger_4, Bollinger_19, EMA_4, EMA_8",0.045980735,3
+24,"Bollinger_4, EMA_4",0.046170023,6
+87,"Bollinger_19, EMA_2",0.046285042,1
+85,"EMA_2, EMA_4, EMA_8",0.047609889,5
+55,"Bollinger_4, EMA_8, EMA_20",0.048719484,5
+30,"Bollinger_19, EMA_20",0.049420443,6
+46,"Bollinger_5, EMA_2, EMA_8",0.050329672,1
+14,Bollinger_4,0.050456864,49
+37,"Bollinger_4, Bollinger_19, Bollinger_5, EMA_4",0.050900339,3
+43,"Bollinger_4, Bollinger_19, Bollinger_5",0.051133171,7
+0,"Bollinger_4, Bollinger_19, EMA_2",0.052358488,1
+23,"Bollinger_4, Bollinger_19, Bollinger_5, EMA_20",0.053614052,3
+76,"Bollinger_5, EMA_2",0.054244721,12
+72,EMA_2,0.05532428,56
+29,"Bollinger_4, Bollinger_5, EMA_2, EMA_4",0.055537415,1
+71,EMA_8,0.056686972,7
+1,"EMA_2, EMA_20",0.059498673,3
+28,"Bollinger_4, Bollinger_5",0.059542851,7
+89,"EMA_4, EMA_8",0.060796362,10
+35,"Bollinger_4, Bollinger_19, Bollinger_5, EMA_8",0.061439875,3
+61,"Bollinger_4, EMA_20",0.062621539,5
+58,"Bollinger_19, Bollinger_5, EMA_4",0.064322512,2
+70,"Bollinger_4, Bollinger_5, EMA_8",0.06945444,1
+68,"Bollinger_4, Bollinger_5, EMA_4",0.072954082,4
+34,"Bollinger_4, Bollinger_19, EMA_2, EMA_20",0.076289936,1
+7,"Bollinger_19, Bollinger_5, EMA_2, EMA_20",0.10756433,1

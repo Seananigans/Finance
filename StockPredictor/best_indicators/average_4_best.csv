@@ -1,0 +1,8 @@
+,Indicator,Error
+4,Bollinger_4,24.3181079432
+5,Bollinger_5,24.3375084864
+6,"Bollinger_4, Bollinger_5",24.4142173266
+0,Bollinger_19,25.9071966892
+3,"Bollinger_4, Bollinger_19",26.1176752579
+2,"Bollinger_19, Bollinger_5",26.1441566241
+1,"Bollinger_4, Bollinger_19, Bollinger_5",26.1699810522

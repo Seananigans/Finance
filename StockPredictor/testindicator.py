@@ -129,15 +129,15 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
                 indicators = [[Lag(i)] for i in opt_var]
         else:
                 indicators = [
-                        Bollinger(4), Bollinger(19), Bollinger(5)]#,
-##                        ExponentialMA(2), ExponentialMA(4), ExponentialMA(8), ExponentialMA(20)]#,
-##                        Lag(1),Lag(3),Lag(8),Lag(11),Lag(16),Lag(20),
-##                        Momentum(1), Momentum(19), Momentum(2), Momentum(3), Momentum(10),
-##                        SimpleMA(2), SimpleMA(4), SimpleMA(10), SimpleMA(20),
-##                        RSI(9), RSI(1), RSI(2), RSI(19),
-##                        Volatility(2), Volatility(3), Volatility(19), Volatility(20),
-##                        Weekdays()
-##                        ]
+                        Bollinger(4), Bollinger(19), Bollinger(5),
+                        ExponentialMA(2), ExponentialMA(4), ExponentialMA(8), ExponentialMA(20),
+                        Lag(1),Lag(3),Lag(8),Lag(11),Lag(16),Lag(20),
+                        Momentum(1), Momentum(19), Momentum(2), Momentum(3), Momentum(10),
+                        SimpleMA(2), SimpleMA(4), SimpleMA(10), SimpleMA(20),
+                        RSI(9), RSI(1), RSI(2), RSI(19),
+                        Volatility(2), Volatility(3), Volatility(19), Volatility(20),
+                        Weekdays()
+                        ]
                 for i in indicators: print i.name
                 empty_list = []
                 upper_length = 4

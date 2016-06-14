@@ -9,7 +9,7 @@ def get_and_store_web_data(symbol, online=False):
 		
 		if online:
 			end_date = dt.date.today()
-			year = dt.timedelta(days=365)
+			year = dt.timedelta(days=365*3)
 			start_date = end_date - year
 		
 			import pandas_datareader.data as web
@@ -50,6 +50,7 @@ def populate_webdata(replace=True):
 				except: continue
 
 def create_output(symbol, horizon=5, use_prices=False):
+	"""Retrieve """
 	dframe = get_and_store_web_data(symbol, online=False)
 	output = dframe[[col for col in dframe if col.startswith("Adj")]]
 	output.columns = ["y_"+symbol for col in output.columns]

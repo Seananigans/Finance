@@ -1,5 +1,5 @@
 """
-Test a learner.	 (c) 2015 Tucker Balch
+Test sets of indicators.
 """
 
 import datetime as dt
@@ -125,17 +125,17 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
         # Get Indicators
         if test_one_indicator:
                 upper_length = 1
-                opt_var = range(1,21)
-                indicators = [[Lag(i)] for i in opt_var]
+                opt_var = range(2,21)
+                indicators = [[SimpleMA(i)] for i in opt_var]
         else:
                 indicators = [
-                        Bollinger(4), Bollinger(19), Bollinger(5),
+                        Bollinger(4), Bollinger(5), Bollinger(19),
                         ExponentialMA(2), ExponentialMA(4), ExponentialMA(8), ExponentialMA(20),
-                        Lag(1),Lag(3),Lag(8),Lag(11),Lag(16),Lag(20),
-                        Momentum(1), Momentum(19), Momentum(2), Momentum(3), Momentum(10),
+                        Lag(1), Lag(3), Lag(8),
+                        Momentum(2), Momentum(3), Momentum(10), Momentum(19),
                         SimpleMA(2), SimpleMA(4), SimpleMA(10), SimpleMA(20),
-                        RSI(9), RSI(1), RSI(2), RSI(19),
-                        Volatility(2), Volatility(3), Volatility(19), Volatility(20),
+                        RSI(2), RSI(5),
+                        Volatility(2), Volatility(3),
                         Weekdays()
                         ]
                 for i in indicators: print i.name
@@ -158,7 +158,7 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
 	for symbol in spy_list:
                 # Get stock data
                 filename= "webdata/{}.csv".format(symbol)
-                if total%10==0:
+                if total%20==0:
                         print round(float(total)/len(spy_list),2)
                 total+=1
                 
@@ -201,11 +201,18 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
                                                      best_ind_dict.get(best_indicator_set, [0,0.0])[1] + best_rmse]
 
 	if test_one_indicator:
+##                sorted_indicators = pd.DataFrame(
+##                        {"Indicator":[re.search("([A-Za-z]+)", string).groups(0)[0] for string in best_ind_dict.keys()],
+##                         "Window":[int(re.search("(\d+)", string).groups(0)[0]) for string in best_ind_dict.keys()],
+##                         "Value":best_ind_dict.values()})
+##                sorted_indicators.sort_values("Value", ascending=False, inplace=True)
+##                sorted_indicators = sorted_indicators[["Indicator","Window","Value"]]
+##                sorted_indicators.to_csv("best_indicators/{}_best.csv".format(sorted_indicators.Indicator.iloc[0]))
                 sorted_indicators = pd.DataFrame(
-                        {"Indicator":[re.search("([A-Za-z]+)", string).groups(0)[0] for string in best_ind_dict.keys()],
-                         "Window":[int(re.search("(\d+)", string).groups(0)[0]) for string in best_ind_dict.keys()],
-                         "Value":best_ind_dict.values()})
-                sorted_indicators.sort_values("Value", ascending=False, inplace=True)
+                        {"Indicator":[re.search("([A-Za-z]+)", string).groups(0)[0] for string in all_ind_dict.keys()],
+                         "Window":[int(re.search("(\d+)", string).groups(0)[0]) for string in all_ind_dict.keys()],
+                         "Value":[val/len(spy_list) for val in all_ind_dict.values()]})
+                sorted_indicators.sort_values("Value", ascending=True, inplace=True)
                 sorted_indicators = sorted_indicators[["Indicator","Window","Value"]]
                 sorted_indicators.to_csv("best_indicators/{}_best.csv".format(sorted_indicators.Indicator.iloc[0]))
         else:
@@ -227,6 +234,6 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
 
 if __name__=="__main__":
 	test_one_indicator = False
-	horizon=5
-	test_indicator(test_one_indicator=False)
+	horizon=10
+	test_indicator(horizon=horizon, test_one_indicator=True)
 	

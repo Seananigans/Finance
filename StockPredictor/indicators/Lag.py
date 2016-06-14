@@ -10,7 +10,7 @@ class Lag(object):
         self.data = data
 
     def getIndicator(self):
-    	lag = self.data.shift(self.window)
+    	lag = self.data.shift(self.window).pct_change()
 
         lag.columns = ["Lag{}_".format(self.window)+x for x in lag.columns]
 

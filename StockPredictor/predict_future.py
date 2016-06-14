@@ -43,7 +43,8 @@ def predict_spy_future(horizon=5, use_prices=False, verbose=False):
 
 	for sym in spy_list:
 		if sym == "ADT": continue #Something about ADT screws up the results
-		features = create_input(sym, [Weekdays(), Bollinger(18), SMA(10), Lag(3)], store=False)
+##		features = create_input(sym, [Weekdays(), Bollinger(18), SMA(10), Lag(3)], store=False)
+		features = create_input(sym, [Weekdays(), Lag(1), SMA(2), SMA(4)], store=False)
 		output = create_output(sym, horizon=horizon, use_prices=use_prices)
 		df = features.join(output).dropna()
 
@@ -61,6 +62,7 @@ def predict_spy_future(horizon=5, use_prices=False, verbose=False):
 		testY = data[train_rows:,-1]
 		trainX, testX = mean_normalization(trainX, testX)
 	
+##		learner = bag.BagLearner(lrl.LinRegLearner(), bags=200, boost=True)
 		learner = lrl.LinRegLearner()
 		learner.addEvidence(trainX, trainY)
 

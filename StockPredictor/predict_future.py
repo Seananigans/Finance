@@ -5,46 +5,60 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import math, os, sys
 
-# from learners import KNNLearner as knn
+# Import Learners
 from learners import LinRegLearner as lrl
 from learners import BagLearner as bag
+from learners import KNNLearner as knn
+# from learners import SVMLearner as svm
+# from learners import DecTreeLearner as dt
+
 # Import indicators
 from indicators.Weekdays import Weekdays
 from indicators.Lag import Lag
 from indicators.Bollinger import Bollinger
 from indicators.SimpleMA import SimpleMA as SMA
+
 # Import dataset retrieval
-from dataset_construction import create_input, create_output
+from dataset_construction import create_input, create_output, get_and_store_web_data
+
 # Import error metrics
 from error_metrics import rmse, mape
+
 # Import normalization
 from normalization import mean_normalization
 
-def predict_spy_future(horizon=5, use_prices=False, verbose=False):
-	fhand = pd.read_csv("spy_list.csv")
-	spy_list = list(fhand.Symbols)
+
+
+def predict_spy_future(symbol= None, horizon=5, learner=None, use_prices=False, verbose=False):
+	"""Predict future prices or returns over a user defined horizon and machine learner."""
+	if not symbol:
+                fhand = pd.read_csv("spy_list.csv")
+                spy_list = list(fhand.Symbols)
+        else:
+                spy_list = [symbol]
 	results = pd.DataFrame()
 	if not use_prices:
-                results = results.append({'Date': np.nan,
-                                          "ReturnDate": np.nan,
-                                          'Symbol': np.nan,
-                                          'Return': np.nan,
-                                          'TestError(RMSE)': np.nan,
-                                          'Benchmark_0(RMSE)': np.nan,
-                                          'TestCorrelation': np.nan}, ignore_index=True)
+		results = results.append({'Date': np.nan,
+					  "ReturnDate": np.nan,
+					  'Symbol': np.nan,
+					  'Return': np.nan,
+					  'TestError(RMSE)': np.nan,
+					  'Benchmark_0(RMSE)': np.nan,
+					  'TestCorrelation': np.nan}, ignore_index=True)
 	else:
-                results = results.append({'Date': np.nan,
-                                          "FutureDate": np.nan,
-                                          'Symbol': np.nan,
-                                          'Future_Price': np.nan,
-                                          'TestError(MAPE)': np.nan,
-                                          'Benchmark_Last_Price(MAPE)': np.nan,
-                                          'TestCorrelation': np.nan}, ignore_index=True)
+		results = results.append({'Date': np.nan,
+					  "FutureDate": np.nan,
+					  'Symbol': np.nan,
+					  'Future_Price': np.nan,
+					  'TestError(MAPE)': np.nan,
+					  'Benchmark_Last_Price(MAPE)': np.nan,
+					  'TestCorrelation': np.nan}, ignore_index=True)
 
 	for sym in spy_list:
-		if sym == "ADT": continue #Something about ADT screws up the results
+		if sym == "ADT" or sym=="NEE": continue #Something about ADT screws up the results
 ##		features = create_input(sym, [Weekdays(), Bollinger(18), SMA(10), Lag(3)], store=False)
-		features = create_input(sym, [Weekdays(), Lag(1), SMA(2), SMA(4)], store=False)
+##		features = create_input(sym, [Weekdays(), Lag(1), SMA(2), SMA(4)], store=False)
+		features = get_and_store_web_data(sym, online=False)
 		output = create_output(sym, horizon=horizon, use_prices=use_prices)
 		df = features.join(output).dropna()
 
@@ -61,13 +75,23 @@ def predict_spy_future(horizon=5, use_prices=False, verbose=False):
 		testX = data[train_rows:,0:-1]
 		testY = data[train_rows:,-1]
 		trainX, testX = mean_normalization(trainX, testX)
-	
-##		learner = bag.BagLearner(lrl.LinRegLearner(), bags=200, boost=True)
-		learner = lrl.LinRegLearner()
-		learner.addEvidence(trainX, trainY)
-
-		# evaluate out of sample
-		predY = learner.query(testX) # get the predictions
+		
+		if not learner:
+			learners = [
+			lrl.LinRegLearner(),
+			knn.KNNLearner(k=55)
+			]
+		else:
+			learners = [learner()]
+		
+		learners[0].addEvidence(trainX, trainY)
+		predY = learners[0].query(testX)
+		for learner in learners[1:]:
+			learner.addEvidence(trainX, trainY)
+			# evaluate out of sample
+			predY += learner.query(testX)
+		predY = predY/len(learners)
+		
 		# Calculate TEST Root Mean Squared Error
 		RMSE = rmse(testY,predY)
 		# Calculate TEST Mean Absolute Percent Error
@@ -82,47 +106,52 @@ def predict_spy_future(horizon=5, use_prices=False, verbose=False):
 			print "MAPE: ", MAPE
 		# Calculate Benchmark
 		if not use_prices:
-                        bench = rmse(testY,0.0)
-                else:
-                        bench = mape(testY, df[[col for col in df.columns if col.startswith("Adj")]].values[train_rows:,-1])
+			bench = rmse(testY,0.0)
+		else:
+			bench = mape(testY, df[[col for col in df.columns if col.startswith("Adj")]].values[train_rows:,-1])
 	
 		_, todays_values = mean_normalization(data[:train_rows,0:-1], features.iloc[-1].values)
-		future_pred = learner.query(todays_values.reshape(1,-1))
-                if not use_prices:
-                        results = results.append( {
-                                                        'Date': features.index[-1], 
-                                                        'ReturnDate': features.index[-1] + BDay(horizon),
-                                                        'Symbol': sym, 
-                                                        'Return': float(future_pred), 
-                                                        'TestError(RMSE)': RMSE,
-                                                        'Benchmark_0(RMSE)': bench,
-                                                        'TestCorrelation': c[0,1]
-                                                        }, 
-                                                        ignore_index=True)
-                else:
-                        results = results.append( {
-                                                        'Date': features.index[-1], 
-                                                        'FutureDate': features.index[-1] + BDay(horizon),
-                                                        'Symbol': sym, 
-                                                        'Future_Price': float(future_pred), 
-                                                        'TestError(MAPE)': MAPE,
-                                                        'Benchmark_Last_Price(MAPE)': bench,
-                                                        'TestCorrelation': c[0,1]
-                                                        }, 
-                                                        ignore_index=True)
+		
+		future_pred = learners[0].query(todays_values.reshape(1,-1))
+		for learner in learners[1:]:
+			future_pred += learner.query(todays_values.reshape(1,-1))
+		future_pred = future_pred/len(learners)
+		
+		if not use_prices:
+			results = results.append( {
+							'Date': features.index[-1], 
+							'ReturnDate': features.index[-1] + BDay(horizon),
+							'Symbol': sym, 
+							'Return': float(future_pred), 
+							'TestError(RMSE)': RMSE,
+							'Benchmark_0(RMSE)': bench,
+							'TestCorrelation': c[0,1]
+							}, 
+							ignore_index=True)
+		else:
+			results = results.append( {
+							'Date': features.index[-1], 
+							'FutureDate': features.index[-1] + BDay(horizon),
+							'Symbol': sym, 
+							'Future_Price': float(future_pred), 
+							'TestError(MAPE)': MAPE,
+							'Benchmark_Last_Price(MAPE)': bench,
+							'TestCorrelation': c[0,1]
+							}, 
+							ignore_index=True)
 
-                        
+			
 	results = results.dropna()
 	if not use_prices:
-                results	= results.sort_values(by=["TestError(RMSE)"],ascending=True)
-                results = results[["Date","ReturnDate","Symbol", "Return","TestError(RMSE)","Benchmark_0(RMSE)","TestCorrelation"]]
-                results.columns = ["Date","Return_Date","Symbol", "Return(%)","Test_Error(RMSE)","Benchmark_0(RMSE)","Test_Correlation"]
-                results.to_csv('return_results.csv', index="Date")
-        else:
-                results	= results.sort_values(by=["TestError(MAPE)"],ascending=True)
-                results = results[["Date","FutureDate","Symbol", "Future_Price","TestError(MAPE)","Benchmark_Last_Price(MAPE)","TestCorrelation"]]
-                results.columns = ["Date","Future_Date","Symbol", "Future_Price($)","Test_Error(MAPE)","Benchmark_Last_Price(MAPE)","Test_Correlation"]
-                results.to_csv('price_results.csv', index="Date")
+		results	= results.sort_values(by=["TestError(RMSE)"],ascending=True)
+		results = results[["Date","ReturnDate","Symbol", "Return","TestError(RMSE)","Benchmark_0(RMSE)","TestCorrelation"]]
+		results.columns = ["Date","Return_Date","Symbol", "Return(%)","Test_Error(RMSE)","Benchmark_0(RMSE)","Test_Correlation"]
+		results.to_csv('return_results.csv', index="Date")
+	else:
+		results	= results.sort_values(by=["TestError(MAPE)"],ascending=True)
+		results = results[["Date","FutureDate","Symbol", "Future_Price","TestError(MAPE)","Benchmark_Last_Price(MAPE)","TestCorrelation"]]
+		results.columns = ["Date","Future_Date","Symbol", "Future_Price($)","Test_Error(MAPE)","Benchmark_Last_Price(MAPE)","Test_Correlation"]
+		results.to_csv('price_results.csv', index="Date")
 	results = results.set_index("Date")
 	return results.iloc[:10]
 

@@ -10,10 +10,14 @@ import pandas as pd
 from learners import LinRegLearner as lrl
 from learners import KNNLearner as knn
 from learners import BagLearner as bag
+from learners import SVMLearner as svm
+from learners import DecTreeLearner as dt
 from util import calculate_returns
 from error_metrics import rmse, mape
 from normalization import mean_normalization, max_normalization
 from plotting import plot_histogram
+from dataset_construction import create_input, create_output, get_and_store_web_data
+
 try:
 	from learners import SVMLearner as svm
 except:
@@ -22,13 +26,17 @@ except:
 if __name__=="__main__":
 
 	# get stock data
-	filename= "simData/example.csv"
+	filename= "webdata/IBM.csv"
+	
 	
 	df = pd.read_csv(filename, index_col='Date',
 					parse_dates=True, na_values=['nan'])
-					
+	output = create_output("IBM")
+	features = get_and_store_web_data("IBM", online=False)
+	df = features.join(output).dropna()
+	
 	data = df.values
-	cols = [col for col in df.columns if not col.startswith("Returns")]
+	cols = [col for col in df.columns if not col.startswith("y")]
 	
 	# compute how much of the data is training and testing
 	train_rows = int(math.floor(0.6* data.shape[0]))
@@ -45,7 +53,7 @@ if __name__=="__main__":
 	print testY.shape
 	
 	# Formatting for printing
-	if trainY.max()<=1.0:
+	if trainY.max()<=3.0:
 		output_type="Return"
 	else:
 		output_type="Price"
@@ -68,7 +76,7 @@ if __name__=="__main__":
 			print cols[i], np.corrcoef(trainX[:,i], trainY)[0][1], trainX[:,i].mean()
 	
 	# Normalize training and test features
-	trainX, testX = mean_normalization(trainX, testX)
+	trainX, testX = max_normalization(trainX, testX)
 	
 	# create a learner and train it
 #	learners = [lrl.LinRegLearner(verbose = True), # create a LinRegLearner
@@ -86,12 +94,17 @@ if __name__=="__main__":
 #							   bags = 10, 
 #							   boost = True, 
 #							   verbose = False)]
-	opt_var = range(5,50,7)
-	learners = [bag.BagLearner(learner = lrl.LinRegLearner,# knn.KNNLearner, #create a BagLearner
-								   kwargs = {},#{"k":3}, #
+	opt_var = range(3,60,3)
+	learners = [bag.BagLearner(learner = dt.DecTreeLearner, # lrl.LinRegLearner,# create a BagLearner
+								   kwargs = {"depth":3}, # {"k":3}, # {},#
 								   bags = i,
-								   boost = True,
+								   boost = False,
 								   verbose = False) for i in opt_var]
+# 	learners = [svm.SVMLearner()]
+# 	opt_var = range(10,150,5)
+# 	learners = [knn.KNNLearner(k=i, verbose = True) for i in opt_var]
+# 	opt_var = range(10,200,20)
+# 	learners = [dt.DecTreeLearner(depth=i, verbose = True) for i in opt_var]
 	
 	# Collect scoring metrics for each learner for later comparison
 	cors, rmsestrain, rmsestest = [], [], []
@@ -156,9 +169,10 @@ if __name__=="__main__":
 			plt.xlabel("Predicted Returns")
 			plt.ylabel("Actual Returns")
 			plt.show()
+		
 		df1 = pd.DataFrame(testX,
 						   columns=cols,
-						   index=df.ix[train_rows:,:].index)
+						   index= df.index[train_rows:])
 		df1 = df1.join(predicted)
 		df1.to_csv("test.csv", index_label="Date")
 	

@@ -28,6 +28,3 @@ class SVMLearner(object):
         @returns the estimated values according to the saved model.
         """
         return self.svr.predict(points)
-
-if __name__=="__main__":
-    print "the secret clue is 'zzyzx'"

@@ -8,6 +8,7 @@ try:
 except:
 	pass
 
+
 class LinRegLearner(object):
 
     def __init__(self, verbose = False):

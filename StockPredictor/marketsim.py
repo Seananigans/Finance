@@ -10,6 +10,7 @@ from util import get_data, plot_data
 from dataset_construction import create_input
 
 def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, allowed_leverage=2.0):
+	print "Starting Cash Value = ${}".format( start_val )
 	# 1 Read CSV into trades array
 	trades = pd.read_csv(orders_file, index_col="Date", 
 						parse_dates=True, na_values=['nan'])
@@ -110,7 +111,7 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, a
 	# 7 Scan cash and value to create total fund value
 	portvals = pd.DataFrame(portfolio + cash)
 	portvals.columns = ["Portfolio"]
-	print cash.iloc[-1]
+	print "Ending Cash Value = ${}".format( cash.iloc[-1] )
 	return portvals
 	
 def get_portfolio_value(prices, allocs, start_val):
@@ -156,17 +157,10 @@ def plot_normalized(data, symbol=None):
 	else:
 		plt.savefig("figures/$SPX.png")
         
-def test_code():
+def test_code(of="./orders/learner_orders.csv",sv = 1000):
 	# this is a helper function you can use to test your code
 	# note that during autograding his function will not be called.
 	# Define input parameters
-
-	of = "./orders/orders_bollinger.csv"
-	of = "./orders/learner_orders.csv"
-	try:
-		sv = float(sys.argv[2])
-	except IndexError:
-		sv = 1000
 	
 	try:
 		symbol = pd.read_csv(of, index_col="Date", parse_dates=True, 
@@ -217,15 +211,21 @@ def test_code():
 	print "Final Portfolio Value: {}".format(portvals[-1])
 
 	temp = dfSPY.join(portvals)
-	try:
-		if sys.argv[1].lower()=='t':
-			plot_normalized(temp, symbol)
-		elif sys.argv[1].lower()=='tt':
-			plot_normalized(temp, symbol)
-			plt.show()
-	except IndexError:
-		pass
+	plot_normalized(temp, symbol)
+	plt.show()
+# 	try:
+# 		if sys.argv[1].lower()=='t':
+# 			plot_normalized(temp, symbol)
+# 		elif sys.argv[1].lower()=='tt':
+# 			plot_normalized(temp, symbol)
+# 			plt.show()
+# 	except IndexError:
+# 		pass
 
 	
 if __name__ == "__main__":
-	test_code()
+	try:
+		sv = float(sys.argv[2])
+	except IndexError, ValueError:
+		sv = 1000
+	test_code(sv)

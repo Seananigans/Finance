@@ -27,6 +27,7 @@
          * matplotlib
 
 3) How do I use this code?
+
 	1) Open a command window and navigate to the `/StockPredictor` folder.
 	
 	2) Every new business day, run `python populate_spy.py` to populate the webdata folder with the past years worth of data up to the current day.

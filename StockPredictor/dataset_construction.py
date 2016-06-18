@@ -64,7 +64,7 @@ def create_input(symbol, indicators = [], store=False):
 	filename = symbol+"_training.csv"
 	dframe = get_and_store_web_data(symbol, online=False)
 	dframe = dframe[[col for col in dframe.columns if col.startswith("Adj")]]
-	adj_close = dframe
+	adj_close = dframe.pct_change().dropna()
     
 	for indicator in indicators:
 		indicator.addEvidence(adj_close)

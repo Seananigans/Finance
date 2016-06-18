@@ -25,8 +25,9 @@
          * pandas
          * scikit-learn
          * matplotlib
+
 3) How do I use this code?
-	1) Open a command window and navigate to the StockPredictor folder.
+	1) Open a command window and navigate to the `/StockPredictor` folder.
 	2) Every new business day, run `python populate_spy.py` to populate the webdata folder with the past years worth of data up to the current day.
 		* Data is retrieved for all ticker symbols in the S&P 500 using the yahoo finance API provided in the pandas\_datareader library.
 	3) Run `python -W ignore predict_future.py 5` to predict returns for the companies with the top 10 highest return values.

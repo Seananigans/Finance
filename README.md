@@ -1,5 +1,5 @@
 # Finance
-1) What is this code for?
+### What is this code for?
 * This code is to establish a base in trading stocks using Machine Learning.
 * Included are python files that serve a variety of funcitons
     * Backtesting Market Simulator (marketsim.py)
@@ -13,7 +13,7 @@
 * Soon to come:
     * A Reinforcement learning agent that develops its own strategy for buying and selling stocks (Q_Learner.py)
 
-2) How to get this code?
+### How to get this code?
 * Clone the repository from github:
    * `$git clone https://github.com/Seananigans/Finance`
 * Build:
@@ -26,21 +26,21 @@
          * scikit-learn
          * matplotlib
 
-3) How do I use this code?
+### How do I use this code?
 
-	1) Open a command window and navigate to the `/StockPredictor` folder.
-	
-	2) Every new business day, run `python populate_spy.py` to populate the webdata folder with the past years worth of data up to the current day.
-	
-		* Data is retrieved for all ticker symbols in the S&P 500 using the yahoo finance API provided in the pandas\_datareader library.
-	
-	3) Run `python -W ignore predict_future.py 5` to predict returns for the companies with the top 10 highest return values.
+1) Open a command window and navigate to the `/StockPredictor` folder.
 
-		* The `5` in `python -W ignore predict_future.py 5` is the number of trading days into the future you wish to predict. This can be adjusted to be any number of days ahead you wish to predict.
+2) Every new business day, run `python populate_spy.py` to populate the webdata folder with the past years worth of data up to the current day.
 
-		* More returns can be investigated in the `results.csv` file in the StockPredictor Folder.
+* Data is retrieved for all ticker symbols in the S&P 500 using the yahoo finance API provided in the pandas\_datareader library.
 
-		* While the program trains a simple linear regression model to predict future returns, the feature variables it uses were selected using the `test_indicators.py` program to minimize error.
+3) Run `python -W ignore predict_future.py 5` to predict returns for the companies with the top 10 highest return values.
 
-4) How do I contribute?
+* The `5` in `python -W ignore predict_future.py 5` is the number of trading days into the future you wish to predict. This can be adjusted to be any number of days ahead you wish to predict.
+
+* More returns can be investigated in the `results.csv` file in the StockPredictor Folder.
+
+* While the program trains a simple linear regression model to predict future returns, the feature variables it uses were selected using the `test_indicators.py` program to minimize error.
+
+### How do I contribute?
 * Simply click on the issues tab and tell me what you think needs changing.

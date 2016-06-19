@@ -6,10 +6,9 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import os, sys
 from util import get_data, plot_data
-##import pandas_datareader.data as web
 from dataset_construction import create_input
 
-def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, allowed_leverage=2.0):
+def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, allowed_leverage=2.0, testing=False):
 	print "Starting Cash Value = ${}".format( start_val )
 	# 1 Read CSV into trades array
 	trades = pd.read_csv(orders_file, index_col="Date", 
@@ -22,8 +21,6 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, a
 	start_date = pd.to_datetime(trades.index.min())
 	
 	# 4 Read in data
-# 	portvals = get_data(symbols, dates)
-##	adj_close = web.DataReader(name=symbols[0], data_source='yahoo', start=start_date, end=end_date)
 	adj_close = create_input(symbols[0], indicators=[], store=False).ix[start_date:,:]
 	adj_close = pd.DataFrame(adj_close[[col for col in adj_close.columns if col.startswith("Adj")]])
 	adj_close.columns = [symbols[0]]
@@ -64,10 +61,11 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, a
 		longs = sum((time_own[time_own>0]*portvals.ix[date,:]).fillna(0.0))
 		shorts = sum((time_own[time_own<0]*portvals.ix[date,:]).fillna(0.0))
 		leverage = (longs + abs(shorts)) / (longs - abs(shorts) + cash)
-# 		print "Longs:\t\t{}".format(longs)
-# 		print "Shorts:\t\t{}".format(shorts)
-# 		print "Cash:\t\t{}".format(cash)
-# 		print "Leverage:\t{}".format(leverage)
+		if testing:
+			print "Longs:\t\t{}".format(longs)
+			print "Shorts:\t\t{}".format(shorts)
+			print "Cash:\t\t{}".format(cash)
+			print "Leverage:\t{}".format(leverage)
 		
 		if leverage >= allowed_leverage:
 			shorts, longs, cash = shorts0, longs0, cash0
@@ -77,16 +75,16 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, a
 			print "REJECTING ORDER"
 			print "Reset Leverage:\t{}".format((longs + abs(shorts)) / (longs - abs(shorts) + cash))
 			continue
-			
-# 		if cash<0:
-# 			bad_cash = cash
-# 			shorts, longs, cash = shorts0, longs0, cash0
-# 			time_own = time_own0.copy()
-# 			print "CASH EXCEEDED"
-# 			print "Potential Cash:\t{}".format(bad_cash)
-# 			print "REJECTING ORDER"
-# 			print "Reset Cash:\t{}".format(cash)
-# 			continue
+		
+		if cash<0 and testing:
+			bad_cash = cash
+			shorts, longs, cash = shorts0, longs0, cash0
+			time_own = time_own0.copy()
+			print "CASH EXCEEDED"
+			print "Potential Cash:\t{}".format(bad_cash)
+			print "REJECTING ORDER"
+			print "Reset Cash:\t{}".format(cash)
+			continue
 		
 		if stock_order == "BUY":
 			on_hand.ix[date, sym] -= n_shares*price
@@ -145,6 +143,7 @@ def get_sharpe_ratio(allocs, prices):
 	return -sharpe_ratio
 
 def plot_normalized(data, symbol=None):
+	"""Plot portfolio values for @data normalized by the first value."""
 	if symbol:
 		title = "Daily portfolio value and {}".format(symbol)
 	else:
@@ -157,11 +156,7 @@ def plot_normalized(data, symbol=None):
 	else:
 		plt.savefig("figures/$SPX.png")
         
-def test_code(of="./orders/learner_orders.csv",sv = 1000):
-	# this is a helper function you can use to test your code
-	# note that during autograding his function will not be called.
-	# Define input parameters
-	
+def test_code(of="./orders/learner_orders.csv",sv = 1000, plotting="f"):
 	try:
 		symbol = pd.read_csv(of, index_col="Date", parse_dates=True, 
 								na_values=['nan']).Symbol[0]
@@ -177,7 +172,6 @@ def test_code(of="./orders/learner_orders.csv",sv = 1000):
 		"warning, code did not return a DataFrame"
 	
 	# Get portfolio stats
-	# Here we just fake the data. you should use your code from previous assignments.
 	portvals = portvals.sort_index()
 	start_date = pd.to_datetime(portvals.index.min())
 	end_date = pd.to_datetime(portvals.index.max())
@@ -185,7 +179,7 @@ def test_code(of="./orders/learner_orders.csv",sv = 1000):
 
 	cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = get_portfolio_stats(portvals,0.0,252)
         dfSPY = create_input(symbol, indicators = [], store=False).ix[start_date:end_date,:]
-##        dfSPY = dfSPY.ix[start_date:end_date,:]
+
 	dfSPY = pd.DataFrame(dfSPY[[col for col in dfSPY.columns if col.startswith("Adj")]])
 	dfSPY.columns = [symbol]
 	
@@ -211,21 +205,21 @@ def test_code(of="./orders/learner_orders.csv",sv = 1000):
 	print "Final Portfolio Value: {}".format(portvals[-1])
 
 	temp = dfSPY.join(portvals)
-	plot_normalized(temp, symbol)
-	plt.show()
-# 	try:
-# 		if sys.argv[1].lower()=='t':
-# 			plot_normalized(temp, symbol)
-# 		elif sys.argv[1].lower()=='tt':
-# 			plot_normalized(temp, symbol)
-# 			plt.show()
-# 	except IndexError:
-# 		pass
+	if plotting=='t':
+		plot_normalized(temp, symbol)
+	elif plotting=='tt':
+		plot_normalized(temp, symbol)
+		plt.show()
 
 	
 if __name__ == "__main__":
 	try:
+		plotting=sys.argv[1].lower()
+	except IndexError:
+		plotting="t"
+	
+	try:
 		sv = float(sys.argv[2])
 	except IndexError, ValueError:
 		sv = 1000
-	test_code(sv)
+	test_code(sv=sv, plotting=plotting)

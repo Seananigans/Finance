@@ -1,6 +1,7 @@
 import time
 from dataset_construction import populate_webdata
 
+"""Populates the /webdata folder with new data gathered from Yahoo Finance."""
 if __name__=="__main__":
 	start_time = time.time()
 	populate_webdata(replace=True)

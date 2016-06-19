@@ -1,4 +1,11 @@
-"""MLT: Utility code."""
+"""MLT: Utility code.
+
+Acknowldgements to the original code provided by Tucker Balch for the 
+Machine Learning For Trading Course offered at Georgia Tech.
+
+This code has been changed significantly and is used for testing the
+value of individual and lists of machine learning algorithms.
+"""
 
 import os
 import datetime as dt

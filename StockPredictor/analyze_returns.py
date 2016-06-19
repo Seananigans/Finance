@@ -2,6 +2,8 @@ import re
 import numpy as np
 import sys
 
+"""Analyze the returns after running `python spy.py > spytest.txt` in the commandline.
+return a comparison of the porfolio returns and the sharpe ratios."""
 try:
         fhand = open(sys.argv[1])
 except IndexError:

@@ -1,5 +1,3 @@
-"""MC1-P2: Optimize a portfolio."""
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,10 +5,10 @@ import datetime as dt
 from util import get_data, plot_data
 import scipy.optimize as spo
 
-# This is the function that will be tested by the autograder
-# The student must update this code to properly implement the functionality
+
 def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     syms=['GOOG','AAPL','GLD','XOM'], gen_plot=False):
+    """Optimizes the distribution of allocations for a set of stock symbols."""
 
     # Read in adjusted closing prices for given symbols, date range
     dates = pd.date_range(sd, ed)
@@ -83,37 +81,13 @@ def plot_normalized_data(df, title="Daily portfolio value and SPY",
     plot_data(df/df.iloc[0], title, xlabel, ylabel)
     
 def test_code():
-    # This function WILL NOT be called by the auto grader
-    # Do not assume that any variables defined here are available to your function/code
-    # It is only here to help you set up and test your code
-
+	"""Tests the optimization code: optimize_portfolio."""
     # Define input parameters
-    # Note that ALL of these values will be set to different values by
-    # the autograder!
-
-#     start_date = dt.datetime(2009,1,1)
-#     end_date = dt.datetime(2010,1,1)
-#     symbols = ['GOOG', 'AAPL', 'GLD', 'XOM', 'IBM']
     
-    # Example 1
-#     start_date = dt.datetime(2010,1,1)
-#     end_date = dt.datetime(2010,12,31)
-#     symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
-    
-    # Example 2
+    # Example 
     start_date = dt.datetime(2004,1,1)
     end_date = dt.datetime(2006,1,1)
     symbols = ['AXP', 'HPQ', 'IBM', 'HNZ']
-    
-    # Example 3
-#     start_date = dt.datetime(2004,12,1)
-#     end_date = dt.datetime(2006,5,31)
-#     symbols = ['YHOO', 'XOM', 'GLD', 'HNZ']
-
-    # Example 4
-#     start_date = dt.datetime(2005,12,1)
-#     end_date = dt.datetime(2006,5,31)
-#     symbols = ['YHOO', 'HPQ', 'GLD', 'HNZ']
 
     # Assess the portfolio
     allocations, cr, adr, sddr, sr = optimize_portfolio(sd = start_date, ed = end_date,\

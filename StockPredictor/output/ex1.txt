@@ -1,8 +1,0 @@
-Start Date: 2010-01-01 00:00:00
-End Date: 2010-12-31 00:00:00
-Symbols: ['GOOG', 'AAPL', 'GLD', 'XOM']
-Allocations: [  0.00000000e+00   3.96661460e-01   6.03338540e-01   2.57730711e-17]
-Sharpe Ratio: 2.00401501096
-Volatility (stdev of daily returns): 0.0101163816868
-Average Daily Return: 0.00127710294565
-Cumulative Return: 0.360090769627

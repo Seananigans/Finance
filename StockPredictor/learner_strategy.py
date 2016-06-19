@@ -22,6 +22,7 @@ from error_metrics import rmse, mape
 from normalization import mean_normalization
 
 def create_model_predict(symbol, horizon = 5):
+	"""Creates predictions for future value of a stock over a specified horizon."""
 	# Where are we saving the data to and retrieving it from?
 	filename = "training_data/{}.csv".format(symbol)
 	# Retrieve data from web and create a csv @ filename
@@ -90,8 +91,6 @@ def create_model_predict(symbol, horizon = 5):
 	test_predictions = predicted = pd.DataFrame(predY,
 							   columns=["Predicted_Test"],
 							   index=df.ix[train_rows:,:].index)
-##	train_predictions.ix[:,:] = train_predictions.values/df.ix[:train_rows,[symbol]].values - 1.0
-##	test_predictions.ix[:,:] = test_predictions.values/df.ix[train_rows:,[symbol]].values - 1.0
 	train_predictions.to_csv('train_preds.csv', index_label="Date")
 	test_predictions.to_csv('test_preds.csv', index_label="Date")
 	return train_predictions, test_predictions

@@ -9,6 +9,7 @@ from util import get_data, plot_data
 from dataset_construction import create_input
 
 def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, allowed_leverage=2.0, testing=False):
+	"""Returns a dataframe with the portfolio values over the time specified by the orders file."""
 	print "Starting Cash Value = ${}".format( start_val )
 	# 1 Read CSV into trades array
 	trades = pd.read_csv(orders_file, index_col="Date", 
@@ -157,6 +158,8 @@ def plot_normalized(data, symbol=None):
 		plt.savefig("figures/$SPX.png")
         
 def test_code(of="./orders/learner_orders.csv",sv = 1000, plotting="f"):
+	"""Returns statistics and plot for an orders file and plots the 
+	portfolio against the company specified by the orders."""
 	try:
 		symbol = pd.read_csv(of, index_col="Date", parse_dates=True, 
 								na_values=['nan']).Symbol[0]

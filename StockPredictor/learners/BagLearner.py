@@ -45,5 +45,3 @@ class BagLearner(object):
         estimates = [learner.query(points) for learner in self.learners]
         return np.mean(estimates, axis=0)
 
-if __name__=="__main__":
-    print "the secret clue is 'zzyzx'"

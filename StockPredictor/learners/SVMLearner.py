@@ -7,9 +7,15 @@ from sklearn.svm import SVR
 
 class SVMLearner(object):
 
-    def __init__(self, verbose = False):
-		self.name = "Linear Support Vector Machine Learner"
-        # pass # move along, these aren't the drones you're looking for
+    def __init__(self, kernel="linear", C=1e3, gamma=0.1, degree=2, verbose = False):
+		self.name = "{} Support Vector Machine Learner".format(kernel.capitalize())
+		self.kernel=kernel
+		if kernel=="linear":
+			self.svr = SVR(kernel=kernel, C=C)
+		elif kernel=="rbf":
+			self.svr = SVR(kernel=kernel, C=C, gamma=gamma)
+		elif kernel=="poly":
+			self.svr = SVR(kernel=kernel, C=C, degree=degree)
 
     def addEvidence(self,dataX,dataY):
         """
@@ -18,7 +24,6 @@ class SVMLearner(object):
         @param dataY: the Y training values
         """
         # build and save the model
-        self.svr = SVR()
         self.svr.fit(dataX, dataY)
         
     def query(self,points):

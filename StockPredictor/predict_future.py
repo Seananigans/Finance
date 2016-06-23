@@ -22,10 +22,10 @@ from indicators.SimpleMA import SimpleMA as SMA
 from dataset_construction import create_input, create_output, get_and_store_web_data
 
 # Import error metrics
-from error_metrics import rmse, mape
+from helpers.error_metrics import rmse, mape
 
 # Import normalization
-from normalization import mean_normalization
+from helpers.normalization import mean_normalization
 
 
 

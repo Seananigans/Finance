@@ -7,7 +7,7 @@ from learner_strategy import learner_strategy
 from marketsim import compute_portvals, test_code
 from learners.LinRegLearner import LinRegLearner as lrl
 from learners.KNNLearner import KNNLearner as knn
-from normalization import mean_normalization
+from helpers.normalization import mean_normalization
 from dataset_construction import get_and_store_web_data, create_input, create_output
 from predict_future import predict_spy_future
 
@@ -74,7 +74,7 @@ for _, i in enumerate(spy_list):
 	returns = dframe.Predicted.dropna()
 	returns = returns.to_frame()
 	returns.columns = ["Returns"]
-	predict_spy_future(symbol= None, horizon=5, learner=None, use_prices=False, verbose=False)
+	predict_spy_future(symbol=i, horizon=horizon, use_prices=False)
 
 	symbol = i
 	horizon = 5
@@ -87,4 +87,4 @@ for _, i in enumerate(spy_list):
 					 horizon = horizon, 
 					 num_shares = num_shares, 
 					 shorting = True)
-	test_code(of = orders_file, sv = start_val, plotting=False)
+	test_code(of = orders_file, sv = start_val, plotting="T", testing=True)

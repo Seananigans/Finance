@@ -5,7 +5,7 @@ import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
 import os, sys
-from util import get_data, plot_data
+from helpers.util import get_data, plot_data
 from dataset_construction import create_input
 
 def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, allowed_leverage=2.0, testing=False):
@@ -157,7 +157,7 @@ def plot_normalized(data, symbol=None):
 	else:
 		plt.savefig("figures/$SPX.png")
         
-def test_code(of="./orders/learner_orders.csv",sv = 1000, plotting="f"):
+def test_code(of="./orders/learner_orders.csv",sv = 1000, plotting="f", testing=False):
 	"""Returns statistics and plot for an orders file and plots the 
 	portfolio against the company specified by the orders."""
 	try:
@@ -168,7 +168,7 @@ def test_code(of="./orders/learner_orders.csv",sv = 1000, plotting="f"):
 		exit()
 
 	# Process orders
-	portvals = compute_portvals(orders_file = of, start_val = sv, allowed_leverage=2.0)
+	portvals = compute_portvals(orders_file = of, start_val = sv, allowed_leverage=2.0, testing=testing)
 	if isinstance(portvals, pd.DataFrame):
 		portvals = portvals[portvals.columns[0]] # just get the first column
 	else:
@@ -208,9 +208,9 @@ def test_code(of="./orders/learner_orders.csv",sv = 1000, plotting="f"):
 	print "Final Portfolio Value: {}".format(portvals[-1])
 
 	temp = dfSPY.join(portvals)
-	if plotting=='t':
+	if plotting.lower()=='t':
 		plot_normalized(temp, symbol)
-	elif plotting=='tt':
+	elif plotting.lower()=='tt':
 		plot_normalized(temp, symbol)
 		plt.show()
 

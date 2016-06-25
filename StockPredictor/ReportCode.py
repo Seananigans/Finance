@@ -33,7 +33,7 @@ ibm_future_returns.columns = ["Returns_{}".format(symbol)]
 # Display the joined Dataset
 ibm_price_returns_df = ibm.join(ibm_future_prices).join(ibm_future_returns)
 num_days = ibm_price_returns_df.dropna().shape[0]
-# if num_days<1: 
+# if num_days<1:
 # 	length-=1
 # 	continue
 print ibm_price_returns_df.iloc[:4]
@@ -57,11 +57,11 @@ dataset is {:.4f} with a standard deviation of {:.4f}.".format(avg_return_stock,
 #     avg_below_zero += percent_below
 #     avg_return += avg_return_stock
 #     avg_std += avg_std_stock
-#     
+#
 # print "Average percent above zero:", avg_above_zero/length
 # print "Average percent below zero:", avg_below_zero/length
 # print "Average of average returns:", avg_return/length
-# print "Average of standard deviation of returns:", avg_std/length 
+# print "Average of standard deviation of returns:", avg_std/length
 
 """PART 3"""
 # Display Prices and returns over whole timeline for example dataset IBM
@@ -72,7 +72,8 @@ plt.savefig("report_figures/{}_prices_returns.png".format(symbol))
 # Display how current price relates to 5 day future returns and prices
 prices_corr = ibm.join(ibm_future_prices).corr()["AdjClose_{}".format(symbol)]["Future_{}".format(symbol)]
 returns_corr = ibm.join(ibm_future_returns).corr()["AdjClose_{}".format(symbol)]["Returns_{}".format(symbol)]
-f, axarr = plt.subplots(1,2, figsize=(15,3))
+f, axarr = plt.subplots(1,2, figsize=(15,5))
+plt.suptitle(symbol)
 axarr[0].scatter(ibm, ibm_future_prices, label="Correlation: {}".format(round(prices_corr,2)))
 axarr[0].set_xlabel('Current Prices')
 axarr[0].set_ylabel('Price 5 Days Later')
@@ -81,46 +82,47 @@ axarr[1].scatter(ibm, ibm_future_returns, label="Correlation: {}".format(round(r
 axarr[1].set_xlabel('Current Prices')
 axarr[1].set_ylabel('5 Day Return')
 axarr[1].legend(loc="lower left", frameon=False)
-plt.show()
-exit()
-"""PART 4"""
-# Creates input data with a 4 day window bollinger value indicator
-from indicators.Bollinger import Bollinger
-df = create_input("IBM", indicators=[Bollinger(3)])
-# Display how feature data appears before removing NA values.
-print df.iloc[:5]
+plt.savefig("report_figures/{}_correlations.png".format(symbol))
+##plt.show()
 
-"""PART 5"""
-# Display how feature data appears after removing NA values.
-print df.iloc[:6].dropna()
-# Display mean normalized feature data
-print "====================After Normalizing===================="
-df = (df-df.mean())/ df.std()
-print df.iloc[:6].dropna()
+"""PART 4: Unnecessary"""
+### Creates input data with a 4 day window bollinger value indicator
+##from indicators.Bollinger import Bollinger
+##df = create_input("IBM", indicators=[Bollinger(3)])
+### Display how feature data appears before removing NA values.
+##print df.iloc[:5]
 
-"""PART 6"""
-# Creates output data of 3 day future returns
-df_output = create_output("IBM",horizon=3)
-# Display output data as it appears before removing NA values.
-print df_output.iloc[-6:]
-# Display output data as it appears before removing NA values.
-print "=========After Processing==========="
-print df_output.iloc[-6:].dropna()
+"""PART 5: Unnecessary"""
+### Display how feature data appears after removing NA values.
+##print df.iloc[:6].dropna()
+### Display mean normalized feature data
+##print "====================After Normalizing===================="
+##df = (df-df.mean())/ df.std()
+##print df.iloc[:6].dropna()
 
-"""PART 7"""
-from indicators import Bollinger, SimpleMA, ExponentialMA, RSI, Volatility, Weekdays, Lag
-ibm_indicators = create_input("IBM",[
-        Bollinger.Bollinger(i) for i in range(3,20)] + [ 
-        SimpleMA.SimpleMA(i) for i in range(3,20)] + [
-        RSI.RSI(i) for i in range(3,20)] + [
-        ExponentialMA.ExponentialMA(i) for i in range(3,20)] + [ 
-        Weekdays.Weekdays() ] + [
-        Lag.Lag(i) for i in range(5)])
-overall_data = get_and_store_web_data("IBM", online=False)
-ibm_indicators = ibm_indicators.join( overall_data[
-        [col for col in overall_data.columns if not col.startswith("Adj")]] )
-print (ibm_indicators.join(ibm_future_returns).corr().ix[:,-1])[np.abs(
-        ibm_indicators.join(ibm_future_returns).corr().ix[:,-1])>0.08]
+"""PART 6: Unnecessary"""
+### Creates output data of 3 day future returns
+##df_output = create_output("IBM",horizon=3)
+### Display output data as it appears before removing NA values.
+##print df_output.iloc[-6:]
+### Display output data as it appears before removing NA values.
+##print "=========After Processing==========="
+##print df_output.iloc[-6:].dropna()
+
+"""PART 7: Unnecessary"""
+##from indicators import Bollinger, SimpleMA, ExponentialMA, RSI, Volatility, Weekdays, Lag
+##ibm_indicators = create_input("IBM",[
+##        Bollinger.Bollinger(i) for i in range(3,20)] + [
+##        SimpleMA.SimpleMA(i) for i in range(3,20)] + [
+##        RSI.RSI(i) for i in range(3,20)] + [
+##        ExponentialMA.ExponentialMA(i) for i in range(3,20)] + [
+##        Weekdays.Weekdays() ] + [
+##        Lag.Lag(i) for i in range(5)])
+##overall_data = get_and_store_web_data("IBM", online=False)
+##ibm_indicators = ibm_indicators.join( overall_data[
+##        [col for col in overall_data.columns if not col.startswith("Adj")]] )
+##print (ibm_indicators.join(ibm_future_returns).corr().ix[:,-1])[np.abs(
+##        ibm_indicators.join(ibm_future_returns).corr().ix[:,-1])>0.08]
 
 """PART 8"""
 # Reports 5 symbols with the lowest test prediction error (RMSE)
@@ -146,23 +148,26 @@ plt.axvline(predicted_returns_results.median(axis=0)[["Test_Error(RMSE)"]].value
 plt.axvline(predicted_returns_results.median(axis=0)[["Bench_0(RMSE)"]].values, color="b")
 plt.xlabel("RMSE")
 plt.xlim((0,.25))
-plt.show()
+##plt.show()
 
 """PART 10"""
 # Create full dataset
-dataset = get_and_store_web_data("IBM", online=False).join(ibm_future_returns).dropna()
+dataset = get_and_store_web_data(symbol, online=False).join(ibm_future_returns).dropna()
 # Calculate Open minus Close and High minus Low
-dataset["HmL_IBM"] = dataset["High_IBM"]-dataset["Low_IBM"]
-dataset["OmC_IBM"] = dataset["Open_IBM"]-dataset["Close_IBM"]
+dataset["HmL_{}".format(symbol)] = dataset["High_{}".format(symbol)]-dataset["Low_{}".format(symbol)]
+dataset["OmC_IBM"] = dataset["Open_{}".format(symbol)]-dataset["Close_{}".format(symbol)]
 # Choose features that will be used for training model
-dataset = create_input("IBM", []).join(
-    dataset[["Volume_IBM","HmL_IBM"]]).join(
-    create_output("IBM", use_prices=False)).dropna()
-# Change actual Adjusted Close and Volume to percent change to deal with trends in prices and 
+dataset = create_input(symbol, []).join(
+    dataset[["Volume_{}".format(symbol),"HmL_{}".format(symbol)]]).join(
+    create_output(symbol, use_prices=False)).dropna()
+# Change actual Adjusted Close and Volume to percent change to deal with trends in prices and
 # improve stationarity (decrease time dependence)
-dataset[["AdjClose_IBM","Volume_IBM"]] = dataset[["AdjClose_IBM","Volume_IBM"]].pct_change()
+dataset[["AdjClose_{}".format(symbol),"Volume_{}".format(symbol)]] = dataset[["AdjClose_{}".format(symbol),"Volume_{}".format(symbol)]].pct_change()
 # Remove any NaN values
 dataset = dataset.dropna()
+example = (dataset.ix[:,:-1] - dataset.ix[:,:-1].mean())/dataset.ix[:,:-1].std()
+example = example.join(dataset["y_{}".format(symbol)])
+example.to_csv("example_data.csv")
 # Create testing set
 num_rows = dataset.shape[0]
 test_rows = range(num_rows-int(0.2*num_rows), num_rows)
@@ -179,7 +184,7 @@ d_rows = [(section*(i-1), section*i) for i in range(1,dividend+1)]
 print "Feature dataset indices: {}".format(d_rows)
 features = [features.iloc[i[0]:i[1]] for i in d_rows]
 print "Test dataset indices: {} to {}".format(test_rows[0],test_rows[-1])
-
+exit()
 """PART 11"""
 for dataset in features:
     # Create a training and validation set
@@ -208,7 +213,7 @@ for dataset in features:
     # Draw plots to compare predictions vs actual values
     f, (plot1, plot2, plot3) = plt.subplots(1,3, figsize=(12,3), sharex=True)
     # Linear Regression Prediction plot
-    plot1.scatter(x = resultslrl, y = validY, 
+    plot1.scatter(x = resultslrl, y = validY,
                   label="Correlation: {}\nTest RMSE: {}\nBench RMSE: {}".format(
             round(np.corrcoef(resultslrl, validY)[0,1],4),
             round(rmse(resultslrl, validY),4),
@@ -217,7 +222,7 @@ for dataset in features:
     plot1.set_xlabel("Linear Regression")
     plot1.set_ylabel("Actual Returns")
     # k-Nearest Neighbors Regression Prediction plot
-    plot2.scatter(x = resultsknn, y = validY, 
+    plot2.scatter(x = resultsknn, y = validY,
                   label="Correlation: {}\nTest RMSE: {}\nBench RMSE: {}".format(
             round(np.corrcoef(resultsknn, validY)[0,1],4),
             round(rmse(resultsknn, validY),4),
@@ -225,7 +230,7 @@ for dataset in features:
     plot2.legend(loc="upper left")
     plot2.set_xlabel( "kNN Regression" )
     # Avg(kNN and Linear) Regression Prediction plot
-    plot3.scatter(x = resultsavg, y = validY, 
+    plot3.scatter(x = resultsavg, y = validY,
                   label="Correlation: {}\nTest RMSE: {}\nBench RMSE: {}".format(
             round(np.corrcoef(resultsavg, validY)[0,1],4),
             round(rmse(resultsavg, validY),4),
@@ -255,8 +260,8 @@ resultsknn = learner.query(testX.values)
 resultsavg = np.add(resultslrl , resultsknn)/2
 # Plot correlation between predicted and actual returns
 plt.figure(figsize=(12,4))
-plt.scatter(resultsavg, 
-            testingY, 
+plt.scatter(resultsavg,
+            testingY,
             color="r",
             label="Correlation: {}\nTest RMSE: {}\nBench RMSE: {}".format(
         round(np.corrcoef(resultsavg, testingY)[0,1],4),
@@ -268,18 +273,19 @@ plt.ylabel("Actual Returns")
 plt.axvline(0.0)
 plt.axhline(0.0)
 plt.show()
+exit()
 # Join returns data into one dataframe for plotting.
 pred = pd.DataFrame(resultsavg, columns = ["Predicted"], index=testingY.index)
 validY = pd.DataFrame(validY, columns = ["Past"], index=trainingY.index)
 dframe = pd.DataFrame(pred.join(trainingY.to_frame(name="Past").join(testingY, how="outer"), how="outer"))
 # Calculate sensitivity.
 print "Only {:.2f}% of the predicted returns were greater than 0.0, \
-while {:.2f}% of the actual test data returns were greater than 0.0.".format( 
+while {:.2f}% of the actual test data returns were greater than 0.0.".format(
     (np.sum(pred>0)*100./testingY.shape[0]).values[0], np.sum(testingY>0)*100./testingY.shape[0] )
-print "{:.2f}% of the time the return was positive, the model predicted it would be positive.".format( 
-    (dframe[dframe.Predicted>0])[dframe.y_IBM>0].shape[0]*100./dframe[dframe.y_IBM>0].shape[0] )
-print "{:.2f}% of the time the return was negative, the model predicted it would be negative.".format( 
-    (dframe[dframe.Predicted<=0])[dframe.y_IBM<=0].shape[0]*100./dframe[dframe.y_IBM<=0].shape[0] )
+print "{:.2f}% of the time the return was positive, the model predicted it would be positive.".format(
+    (dframe[dframe.Predicted>0])[dframe["y_{}".format(symbol)]>0].shape[0]*100./dframe[dframe["y_{}".format(symbol)]>0].shape[0] )
+print "{:.2f}% of the time the return was negative, the model predicted it would be negative.".format(
+    (dframe[dframe.Predicted<=0])[dframe["y_{}".format(symbol)]<=0].shape[0]*100./dframe[dframe["y_{}".format(symbol)]<=0].shape[0] )
 # Plot returns dataframe.
 dframe.plot(figsize=(12,4))
 plt.ylabel("Returns")
@@ -337,11 +343,11 @@ test_error_plot, = plt.plot(weeks, error_list, 'r', lw=3)
 test_error_upper_plot, = plt.plot(weeks, error_upper_band, 'r--')
 bench_error_plot, = plt.plot(weeks, bench_list, 'b', lw=3)
 bench_error_upper_plot, = plt.plot(weeks, bench_upper_band, 'b--')
-plt.legend([test_error_plot, test_error_upper_plot, bench_error_plot, bench_error_upper_plot], 
-           ["Average Test Error", 
-            "Avg. Test Error + 3 Sigma", 
-            "Average Benchmark Error", 
-            "Avg. Bench Error + 3 Sigma"], 
+plt.legend([test_error_plot, test_error_upper_plot, bench_error_plot, bench_error_upper_plot],
+           ["Average Test Error",
+            "Avg. Test Error + 3 Sigma",
+            "Average Benchmark Error",
+            "Avg. Bench Error + 3 Sigma"],
            loc="upper left")
 plt.xlabel("Weeks")
 plt.ylabel("Estimate Error (RMSE)")
@@ -362,11 +368,11 @@ horizon = 5
 num_shares = 10
 orders_file = "./orders/learner_orders.csv"
 start_val = 1000
-learner_strategy(data = returns, 
-                 threshold = 0.01, 
-                 sym = symbol, 
-                 horizon = horizon, 
-                 num_shares = num_shares, 
+learner_strategy(data = returns,
+                 threshold = 0.01,
+                 sym = symbol,
+                 horizon = horizon,
+                 num_shares = num_shares,
                  shorting = True)
 test_code(of = orders_file, sv = start_val)
 # test_code(of = orders_file, sv = start_val) uses compute_portvals(orders_file, start_val, allowed_leverage=2.0)

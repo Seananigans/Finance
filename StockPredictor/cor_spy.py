@@ -8,7 +8,7 @@ import math, os, sys
 # Import dataset retrieval
 from dataset_construction import create_input, create_output
 # Import normalization
-from normalization import mean_normalization
+from helpers.normalization import mean_normalization
 
 fhand = pd.read_csv("spy_list.csv")
 spy_list = list(fhand.Symbols)
@@ -20,4 +20,4 @@ for sym in spy_list[1:]:
 	if sym == "ADT": continue
 	df = df.join(create_input(sym, indicators=[], store=False))
 
-print df.corr()
+df.corr().to_csv("StockCorrelations.csv")

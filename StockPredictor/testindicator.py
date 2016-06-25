@@ -25,9 +25,9 @@ from indicators.Weekdays import Weekdays
 # Import dataset constructor library
 from dataset_construction import create_input, create_output
 # Import data processing libraries
-from util import calculate_returns
-from error_metrics import rmse, mape
-from normalization import mean_normalization, max_normalization
+from helpers.util import calculate_returns
+from helpers.error_metrics import rmse, mape
+from helpers.normalization import mean_normalization, max_normalization
 
 # from plotting import plot_histogram
 ##from learners import SVMLearner as svm
@@ -120,6 +120,7 @@ def plot_error_curves(opt_var, train_error, test_error, error_type="RMSE"):
 def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=False):
         fhand = pd.read_csv("spy_list.csv")
 	spy_list = list(fhand.Symbols)
+	spy_length = len(spy_list)
 	use_prices=False
 	
         # Get Indicators
@@ -130,17 +131,16 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
         else:
                 indicators = [
                         Bollinger(4), Bollinger(5), Bollinger(19),
-                        ExponentialMA(2), ExponentialMA(4), ExponentialMA(8), ExponentialMA(20),
-                        Lag(1), Lag(3), Lag(8),
-                        Momentum(2), Momentum(3), Momentum(10), Momentum(19),
-                        SimpleMA(2), SimpleMA(4), SimpleMA(10), SimpleMA(20),
-                        RSI(2), RSI(5),
-                        Volatility(2), Volatility(3),
+                        ExponentialMA(2), ExponentialMA(4),
+                        Lag(1), Lag(3),
+                        Momentum(2), Momentum(3),
+                        SimpleMA(4), SimpleMA(10),
+                        RSI(10), Volatility(5),
                         Weekdays()
                         ]
                 for i in indicators: print i.name
                 empty_list = []
-                upper_length = 4
+                upper_length = 5
                 for j in range(1,upper_length+1):
                     for i in combinations(indicators,j):
                         empty_list.append(list(i))
@@ -149,37 +149,39 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
 ##                opt_var = [[ind.name for ind in indicator] for indicator in indicators]
         
         # create a learner and train it
-##        learner = bag.BagLearner(learner=lrl.LinRegLearner, kwargs={}, bags= 50, boost=False)
         learner = lrl.LinRegLearner()
 
         best_ind_dict = {}
         all_ind_dict = {}
-        total = 1
-	for symbol in spy_list:
-                # Get stock data
-                filename= "webdata/{}.csv".format(symbol)
-                if total%20==0:
-                        print round(float(total)/len(spy_list),2)
-                total+=1
-                
+	
+        for i, indicator in enumerate(indicators):
                 # Collect scoring metrics for each learner for later comparison
                 cors, rmsestrain, rmsestest = [], [], []
                 if use_prices: mapestrain, mapestest = [], []
                 
                 best_rmse = np.inf
-                for i, indicator in enumerate(indicators):
-                        predicted, c, train_cor, train_mape, test_mape, train_rmse, test_rmse = run_test(symbol, indicator, learner)
-                        if test_rmse < best_rmse:
-                                best_rmse = test_rmse
-                                best_indicator_set = ", ".join([ind.name for ind in indicator])
-                        indicator_set = ", ".join([ind.name for ind in indicator])
-                        if test_rmse<4.0: all_ind_dict[indicator_set] = all_ind_dict.get(indicator_set, 0.0) + test_rmse
-                        rmsestrain.append(train_rmse)
-                        rmsestest.append(test_rmse)
-                        if use_prices:
-                                mapestrain.append(train_mape)
-                                mapestest.append(test_mape)
-                        cors.append(c)
+                for symbol in spy_list:
+                        # Get stock data
+                        filename= "webdata/{}.csv".format(symbol)
+                        try:
+                                try:
+                                        predicted, c, train_cor, train_mape, test_mape, train_rmse, test_rmse = run_test(symbol, indicator, learner)
+                                except ValueError:
+                                        spy_length -= 1
+                                        continue
+                                if test_rmse < best_rmse:
+                                        best_rmse = test_rmse
+                                        best_indicator_set = ", ".join([ind.name for ind in indicator])
+                                indicator_set = ", ".join([ind.name for ind in indicator])
+                                if test_rmse<4.0: all_ind_dict[indicator_set] = all_ind_dict.get(indicator_set, 0.0) + test_rmse
+                                rmsestrain.append(train_rmse)
+                                rmsestest.append(test_rmse)
+                                if use_prices:
+                                        mapestrain.append(train_mape)
+                                        mapestest.append(test_mape)
+                                cors.append(c)
+                        except Exception, e:
+                                print str(e)
                 
                 if len(indicators)>4 and plotting:
                         plt.plot(range(len(cors)), cors)
@@ -234,6 +236,6 @@ def test_indicator(horizon=5,test_one_indicator=True, verbose=False, plotting=Fa
 
 if __name__=="__main__":
 	test_one_indicator = False
-	horizon=10
-	test_indicator(horizon=horizon, test_one_indicator=True)
+	horizon=5
+	test_indicator(horizon=horizon, test_one_indicator=False)
 	

@@ -163,6 +163,7 @@ def learner_strategy(data, threshold=0.05, sym="IBM", horizon=5, num_shares=100,
 ##				position, days = None, 0
 				
 	df = df.dropna()
+	df = df.sort_values(by=["Date"],ascending=True)
 	df.index = df.Date
 	df = df[[col for col in df.columns if col!="Date"]]
 	colms = ['Symbol', 'Order', 'Shares']

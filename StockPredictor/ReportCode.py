@@ -18,7 +18,7 @@ from predict_future import predict_spy_future
 # Create features dataset and output dataset
 # fhand = pd.read_csv("spy_list.csv")
 # spy_list = list(fhand.Symbols)
-symbol = "AAPL"
+symbol = "IBM"
 # avg_above_zero = 0.
 # avg_below_zero = 0.
 # avg_return = 0.0
@@ -83,7 +83,7 @@ axarr[1].set_xlabel('Current Prices')
 axarr[1].set_ylabel('5 Day Return')
 axarr[1].legend(loc="lower left", frameon=False)
 plt.savefig("report_figures/{}_correlations.png".format(symbol))
-##plt.show()
+plt.show()
 
 """PART 4: Unnecessary"""
 ### Creates input data with a 4 day window bollinger value indicator
@@ -148,14 +148,14 @@ plt.axvline(predicted_returns_results.median(axis=0)[["Test_Error(RMSE)"]].value
 plt.axvline(predicted_returns_results.median(axis=0)[["Bench_0(RMSE)"]].values, color="b")
 plt.xlabel("RMSE")
 plt.xlim((0,.25))
-##plt.show()
+plt.show()
 
 """PART 10"""
 # Create full dataset
 dataset = get_and_store_web_data(symbol, online=False).join(ibm_future_returns).dropna()
 # Calculate Open minus Close and High minus Low
 dataset["HmL_{}".format(symbol)] = dataset["High_{}".format(symbol)]-dataset["Low_{}".format(symbol)]
-dataset["OmC_IBM"] = dataset["Open_{}".format(symbol)]-dataset["Close_{}".format(symbol)]
+# dataset["OmC_IBM"] = dataset["Open_{}".format(symbol)]-dataset["Close_{}".format(symbol)]
 # Choose features that will be used for training model
 dataset = create_input(symbol, []).join(
     dataset[["Volume_{}".format(symbol),"HmL_{}".format(symbol)]]).join(
@@ -184,8 +184,9 @@ d_rows = [(section*(i-1), section*i) for i in range(1,dividend+1)]
 print "Feature dataset indices: {}".format(d_rows)
 features = [features.iloc[i[0]:i[1]] for i in d_rows]
 print "Test dataset indices: {} to {}".format(test_rows[0],test_rows[-1])
-exit()
+
 """PART 11"""
+total=0
 for dataset in features:
     # Create a training and validation set
     train_rows = range(0, int(0.8*dataset.shape[0]))
@@ -211,7 +212,7 @@ for dataset in features:
     # Average prediction for an ensemble prediction
     resultsavg = np.add(resultslrl , resultsknn)/2
     # Draw plots to compare predictions vs actual values
-    f, (plot1, plot2, plot3) = plt.subplots(1,3, figsize=(12,3), sharex=True)
+    f, (plot1, plot2, plot3) = plt.subplots(1,3, figsize=(12,5),sharex=True)
     # Linear Regression Prediction plot
     plot1.scatter(x = resultslrl, y = validY,
                   label="Correlation: {}\nTest RMSE: {}\nBench RMSE: {}".format(
@@ -237,6 +238,8 @@ for dataset in features:
             round(rmse(np.zeros(validY.shape), validY),4)))
     plot3.legend(loc="upper left")
     plot3.set_xlabel( "Avg(kNN and Linear) Regression" )
+    plt.savefig("report_figures/example_{}.png".format(total))
+    total+=1
     plt.show()
 # Retreive data comparable in rows to those previously trained on.
 trainingX, trainingY = (dataset.ix[-section:,:-1], dataset.ix[-section:,-1])
@@ -272,8 +275,9 @@ plt.xlabel( "Avg(kNN and Linear) Regression Test Results" )
 plt.ylabel("Actual Returns")
 plt.axvline(0.0)
 plt.axhline(0.0)
+plt.savefig("report_figures/example_results.png")
 plt.show()
-exit()
+
 # Join returns data into one dataframe for plotting.
 pred = pd.DataFrame(resultsavg, columns = ["Predicted"], index=testingY.index)
 validY = pd.DataFrame(validY, columns = ["Past"], index=trainingY.index)
@@ -287,9 +291,10 @@ print "{:.2f}% of the time the return was positive, the model predicted it would
 print "{:.2f}% of the time the return was negative, the model predicted it would be negative.".format(
     (dframe[dframe.Predicted<=0])[dframe["y_{}".format(symbol)]<=0].shape[0]*100./dframe[dframe["y_{}".format(symbol)]<=0].shape[0] )
 # Plot returns dataframe.
-dframe.plot(figsize=(12,4))
+dframe.plot(figsize=(12,6))
 plt.ylabel("Returns")
 plt.axhline(0.0, color='k')
+plt.savefig("report_figures/returns_graph.png")
 plt.show()
 
 """PART 12"""
@@ -308,11 +313,12 @@ df = averages.join(medians).join(stdevs)
 print df
 # Plot histogram to show performance against benchmark.
 predicted_returns_results[
-    ["Test_Error(RMSE)","Bench_0(RMSE)"]].plot.hist( color=["r","b"], bins=30, alpha=0.3, figsize=(10,3) )
+    ["Test_Error(RMSE)","Bench_0(RMSE)"]].plot.hist( color=["r","b"], bins=30, alpha=0.3, figsize=(10,5) )
 plt.axvline(predicted_returns_results.median(axis=0)[["Test_Error(RMSE)"]].values, color="r")
 plt.axvline(predicted_returns_results.median(axis=0)[["Bench_0(RMSE)"]].values, color="b")
 plt.xlabel("RMSE")
 plt.xlim((0,.25))
+plt.savefig("report_figures/testVbench_hist.png")
 plt.show()
 
 """PART 13"""
@@ -337,7 +343,7 @@ error_upper_band = [mn + 3*std for mn, std in zip(error_list, error_std_list)]
 bench_upper_band = [mn + 3*std for mn, std in zip(bench_list, bench_std_list)]
 
 """PART 15"""
-fig, ax = plt.subplots(figsize=(12,3))
+fig, ax = plt.subplots(figsize=(12,6))
 
 test_error_plot, = plt.plot(weeks, error_list, 'r', lw=3)
 test_error_upper_plot, = plt.plot(weeks, error_upper_band, 'r--')
@@ -351,29 +357,29 @@ plt.legend([test_error_plot, test_error_upper_plot, bench_error_plot, bench_erro
            loc="upper left")
 plt.xlabel("Weeks")
 plt.ylabel("Estimate Error (RMSE)")
-
+plt.savefig("report_figures/overtime.png")
 plt.show()
-
+exit()
 """PART 16"""
-from learner_strategy import learner_strategy
-from marketsim import compute_portvals, test_code
+# from learner_strategy import learner_strategy
+# from marketsim import compute_portvals, test_code
 
 """PART 17"""
-returns = dframe.Predicted.dropna()
-returns = returns.to_frame()
-returns.columns = ["Returns"]
-
-symbol = "IBM"
-horizon = 5
-num_shares = 10
-orders_file = "./orders/learner_orders.csv"
-start_val = 1000
-learner_strategy(data = returns,
-                 threshold = 0.01,
-                 sym = symbol,
-                 horizon = horizon,
-                 num_shares = num_shares,
-                 shorting = True)
-test_code(of = orders_file, sv = start_val)
+# returns = dframe.Predicted.dropna()
+# returns = returns.to_frame()
+# returns.columns = ["Returns"]
+# 
+# symbol = "IBM"
+# horizon = 5
+# num_shares = 10
+# orders_file = "./orders/learner_orders.csv"
+# start_val = 1000
+# learner_strategy(data = returns,
+#                  threshold = 0.01,
+#                  sym = symbol,
+#                  horizon = horizon,
+#                  num_shares = num_shares,
+#                  shorting = True)
+# test_code(of = orders_file, sv = start_val)
 # test_code(of = orders_file, sv = start_val) uses compute_portvals(orders_file, start_val, allowed_leverage=2.0)
 # to compute the portfolio value.

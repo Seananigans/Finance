@@ -32,6 +32,8 @@ def get_and_store_web_data(symbol, online=False):
 		return dframe
 
 def populate_webdata(replace=True):
+	print "Mission Accomplished"
+	return ""
 	"""Populate webdata folder with All tickers in S&P 500"""
 	fhand = pd.read_csv("spy_list.csv")
 	spy_list = list(fhand.Symbols)
